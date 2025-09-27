@@ -27,14 +27,20 @@ export default function Game() {
         if (hasGameStarted.current) return;
         
         const k = kaplay({
+            
             plugins: [crew],
             font: "happy",
             background: [0,0,0],
             backgroundAudio: true,
+            
+            width: Math.floor(window.innerWidth/6)*4,
+            height: Math.floor(window.innerHeight/6)*5,
         });
 
         hasGameStarted.current = k;;
-
+        hasGameStarted.current.canvas.style.position = 'absolute';
+        hasGameStarted.current.canvas.style.top = '0px';
+        hasGameStarted.current.canvas.style.left = '0px';
         k.loadCrew("sprite", "apple");
         k.loadCrew("sprite", "grape", "purplefruit");
         k.loadCrew("font", "happy");
@@ -65,6 +71,8 @@ k.add([
     k.color(255, 255, 255), // White text
     k.fixed(), // Ensure the text is also fixed
 ])
+
+
 
         
         const mainCharacter = k.add([

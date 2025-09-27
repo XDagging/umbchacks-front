@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import Game from './components/Game';
 import Marquee from "react-fast-marquee";
+import PhoneComponent from './components/PhoneComponent';
 
 export default function HomePage() {
 
@@ -58,9 +59,28 @@ export default function HomePage() {
 
     
     </> :<> 
-    
-    <Game></Game>
-    
+
+
+    <div className='grid grid-cols-6 w-screen h-screen'>
+
+
+        <div className='col-span-4 w-full h-full'>
+               <Game></Game>
+
+
+        </div>
+
+
+        <div className=" col-span-2">
+            <PhoneComponent />
+
+        </div>
+            
+ 
+
+
+    </div>
+
     </>}
 </section>
 
