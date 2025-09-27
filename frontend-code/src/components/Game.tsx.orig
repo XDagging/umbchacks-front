@@ -1,5 +1,9 @@
+<<<<<<< HEAD
+import React, {useRef, useEffect, useState} from "react";
+=======
 // src/components/Game.tsx
 import React, { useRef, useEffect, useState } from "react";
+>>>>>>> 10fad53264185b31074807c5596ae41f145c8c1f
 import { crew } from "@kaplayjs/crew";
 import kaplay from "kaplay";
 
