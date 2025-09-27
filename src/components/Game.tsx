@@ -1,11 +1,13 @@
-import React, {useRef, useEffect, useState} from "react";
+import React, {useRef, useEffect, useState, use} from "react";
 import { crew } from "@kaplayjs/crew";
 import kaplay from "kaplay";
 import x from "../assets/cloud.png"
 
 
 export default function Game() {
-    
+
+    const hasGameStarted = useRef<any>(null);
+    // const [x, setX] = useState(false);
     const [playerStats, setPlayerStats] = useState({
         age: 0,
         health: 100,
@@ -16,11 +18,13 @@ export default function Game() {
     })
 
     const SPEED = 200;
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+    // const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    console.log("canvas ref was ran", canvasRef)
+    // console.log("canvas ref was ran", canvasRef)
     
     useEffect(() => {
+
+        if (hasGameStarted.current) return;
         
         const k = kaplay({
             plugins: [crew],
@@ -28,6 +32,8 @@ export default function Game() {
             background: [0,0,0],
             backgroundAudio: true,
         });
+
+        hasGameStarted.current = k;;
 
         k.loadCrew("sprite", "apple");
         k.loadCrew("sprite", "grape", "purplefruit");
@@ -126,9 +132,7 @@ k.add([
 
     return (
         <>
-        <p>asdfas</p>
-
-        <canvas ref={canvasRef} className="w-screen h-screen"></canvas>
+        {/* <canvas ref={canvasRef} className=""></canvas> */}
 
 
 

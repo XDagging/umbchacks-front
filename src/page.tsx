@@ -4,7 +4,7 @@ import Marquee from "react-fast-marquee";
 
 export default function HomePage() {
 
-    const [hasGameStarted, setHasGameStarted] = useState(false);
+    const [hasGameStarted, setHasGameStarted] = useState(true);
 // 
     // kaplay();
 
@@ -17,7 +17,7 @@ export default function HomePage() {
     
 <p className='btn btn-primary'>hello world</p> */}
 
-<section className='w-screen h-screen'>
+<section className=''>
 
 
     {!hasGameStarted ? <>
@@ -59,8 +59,7 @@ export default function HomePage() {
     
     </> :<> 
     
-    
-    <Game />
+    <Game></Game>
     
     </>}
 </section>
