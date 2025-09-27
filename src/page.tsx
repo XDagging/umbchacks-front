@@ -18,8 +18,7 @@ export default function HomePage() {
     
 <p className='btn btn-primary'>hello world</p> */}
 
-<section className=''>
-
+<section className='w-screen h-screen'>
 
     {!hasGameStarted ? <>
     <section className="w-full h-full">
@@ -61,7 +60,7 @@ export default function HomePage() {
     </> :<> 
 
 
-    <div className='grid grid-cols-6 w-screen h-screen'>
+    <div className='grid grid-cols-6 items-start justify-start w-screen h-full'>
 
 
         <div className='col-span-4 w-full h-full'>
@@ -70,8 +69,7 @@ export default function HomePage() {
 
         </div>
 
-
-        <div className=" col-span-2">
+        <div className="col-span-2 w-full h-full relative">
             <PhoneComponent />
 
         </div>

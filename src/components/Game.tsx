@@ -34,7 +34,7 @@ export default function Game() {
             backgroundAudio: true,
             
             width: Math.floor(window.innerWidth/6)*4,
-            height: Math.floor(window.innerHeight/6)*5,
+            height: window.innerHeight,
         });
 
         hasGameStarted.current = k;;
