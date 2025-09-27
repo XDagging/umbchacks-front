@@ -1,8 +1,7 @@
-// src/views/HomeView.tsx
-import React, { useState } from 'react';
-import Game from '../components/Game';
-import Marquee from 'react-fast-marquee';
-import PhoneComponent from '../components/PhoneComponent';
+import React, { useState } from "react";
+import Game from "../components/Game";
+import Marquee from "react-fast-marquee";
+import PhoneComponent from "../components/PhoneComponent";
 
 export default function HomeView() {
   const [hasGameStarted, setHasGameStarted] = useState(true);
@@ -13,7 +12,9 @@ export default function HomeView() {
         <section className="w-full h-full">
           <Marquee className="flex items-center justiy-between">
             <p className="font-1 mr-16">You're probably broke</p>
-            <p className="font-1 mr-16">Let me guess, you blew your money on something stupid again?</p>
+            <p className="font-1 mr-16">
+              Let me guess, you blew your money on something stupid again?
+            </p>
             <p className="font-1 mr-16">Womp Womp!</p>
             <p className="font-1 mr-16">Cry about it</p>
           </Marquee>
