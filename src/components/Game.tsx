@@ -1,13 +1,21 @@
-import React, {useRef, useEffect} from "react";
+import React, {useRef, useEffect, useState} from "react";
 import { crew } from "@kaplayjs/crew";
 import kaplay from "kaplay";
 import x from "../assets/cloud.png"
 
 
 export default function Game() {
+    
+    const [playerStats, setPlayerStats] = useState({
+        age: 0,
+        health: 100,
+        money: 0,
+        description: "A new player",
 
 
-    const SPEED = 50;
+    })
+
+    const SPEED = 200;
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     console.log("canvas ref was ran", canvasRef)
@@ -17,11 +25,40 @@ export default function Game() {
         const k = kaplay({
             plugins: [crew],
             font: "happy",
+            background: [0,0,0],
+            backgroundAudio: true,
         });
 
         k.loadCrew("sprite", "apple");
         k.loadCrew("sprite", "grape", "purplefruit");
         k.loadCrew("font", "happy");
+
+    
+        // const gameBar = k.add([
+        //     k.rect(k.width(), 50).colo,
+        //     k.pos(0, k.height() - 50),
+        //     k.anchor("topleft"),
+        //     k.fixed()
+        // ])
+        const BAR_HEIGHT = 100;
+        const MARGIN = 50; // Our desired margin in pixels
+
+k.add([
+    k.rect(k.width() - (MARGIN * 2), BAR_HEIGHT),
+
+    // Adjust the position for left and bottom margins
+    k.pos(MARGIN, k.height() - BAR_HEIGHT - MARGIN),
+    
+    k.fixed(), // This is the magic part!
+    k.color(50, 50, 50), // A dark gray color
+]);
+
+k.add([
+    k.text("Age: 412", { size: 24 }),
+    k.pos(MARGIN + 20, k.height() - BAR_HEIGHT - MARGIN + 20),
+    k.color(255, 255, 255), // White text
+    k.fixed(), // Ensure the text is also fixed
+])
 
         
         const mainCharacter = k.add([
@@ -91,7 +128,7 @@ export default function Game() {
         <>
         <p>asdfas</p>
 
-        <canvas ref={canvasRef} className="w-full h-full"></canvas>
+        <canvas ref={canvasRef} className="w-screen h-screen"></canvas>
 
 
 

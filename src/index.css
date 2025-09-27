@@ -1,6 +1,12 @@
+
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 @import "tailwindcss";
 @plugin "daisyui";
 
+
+.font-1 {
+  font-family: 'VT323', monospace;
+}
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
