@@ -21,22 +21,7 @@ export default function PhoneComponentWithMCQ() {
     setLoading(true);
     setSelectedOption(null);
 
-    const prompt = `Generate one multiple-choice financial question. 
-    Topics: Personal Finance, Corporate Finance, Investment Strategies, Financial Markets, 
-    Banking & Financial Institutions, Insurance & Risk Management, Macroeconomics & Finance, 
-    Behavioral Finance, Global Trade & Finance, Sustainable Finance, Payments & Banking Tech, 
-    Bitcoin & Altcoins, Decentralized Finance (DeFi), Crypto Regulation.   
-    Requirements:   
-    Question: <= 150 characters.   
-    Each answer: <= 60 characters.   
-    Exactly 4 answers in an array.   
-    Provide correct answer as 1,2,3, or 4.   
-    Return ONLY valid JSON in this format:   
-    {
-      "question": "the question",
-      "choices": ["answer 1", "answer 2", "answer 3", "answer 4"],
-      "answer": 1
-    }`;
+    const prompt = 'Generate one multiple-choice financial question. Topics: Personal Finance, Corporate Finance, Investment Strategies, Financial Markets, Banking & Financial Institutions, Insurance & Risk Management, Macroeconomics & Finance, Behavioral Finance, Global Trade & Finance, Sustainable Finance, Payments & Banking Tech, Bitcoin & Altcoins, Decentralized Finance (DeFi), Crypto Regulation.   Requirements:   Question length: ≤150 characters.   Each answer length: ≤60 characters.   Exactly 4 answers in the "choices" array.   The correct answer must be placed at a random index (1–4).   The "answer" field must be the number 1, 2, 3, or 4 (not the text).   Return ONLY valid JSON in this format, with no extra text:   {  "question": "the question",  "choices": ["answer 1", "answer 2", "answer 3", "answer 4"],  "answer": 1}';
 
     const response = await fetch("/api/gemini", {
       method: "POST",
