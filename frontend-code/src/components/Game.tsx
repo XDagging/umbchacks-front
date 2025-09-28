@@ -271,7 +271,7 @@ const staminaGroup = k.add([
 
 // 1. The Child (Border/Background): Drawn first, so it's in the back.
 staminaGroup.add([
-    k.rect(STAMINA_BAR_WIDTH, STAMINA_BAR_HEIGHT),
+    k.rect(STAMINA_BAR_WIDTH + 8, STAMINA_BAR_HEIGHT),
     k.pos(0, 0),
     k.color(0, 0, 0), // Black color for the border
     k.anchor("topright"),
