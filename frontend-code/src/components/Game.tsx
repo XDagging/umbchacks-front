@@ -2,7 +2,9 @@
 import React, { useRef, useEffect, useState } from "react";
 import { crew } from "@kaplayjs/crew";
 import kaplay from "kaplay";
+import { HeartCrack } from "lucide-react";
 
+// import x from "../assets/grass.png";
 
 
 
@@ -10,12 +12,18 @@ import kaplay from "kaplay";
 export default function Game() {
   const hasGameStarted = useRef<any>(null);
 
+
+  const [dialogue, setDialogue] = useState("");
+
+
   const [playerStats, setPlayerStats] = useState({
     age: 0,
-    health: 100,
+    health: 2,
     money: 0,
     description: "A new player",
   });
+
+  
 
   useEffect(() => {
     if (hasGameStarted.current) return;
@@ -28,34 +36,30 @@ export default function Game() {
       width: Math.floor(window.innerWidth / 6) * 4,
       height: window.innerHeight,
     });
+    const GRID = 64; // cell size
+ 
 
+    
     hasGameStarted.current = k;
     k.canvas.style.position = "absolute";
     k.canvas.style.top = "0px";
     k.canvas.style.left = "0px";
 
     // Assets
+    k.loadCrew("sprite", "heart-o")
+    k.loadCrew("sprite", "heart");
     k.loadCrew("sprite", "apple");
     k.loadCrew("sprite", "grape", "purplefruit");
     k.loadCrew("font", "happy");
+
+    k.loadSprite("grass", "grass.png")
 
     // ----- HUD (fixed to screen space) -----
     const BAR_HEIGHT = 100;
     const MARGIN = 50;
 
-    k.add([
-      k.rect(k.width() - MARGIN * 2, BAR_HEIGHT),
-      k.pos(MARGIN, k.height() - BAR_HEIGHT - MARGIN),
-      k.fixed(),
-      k.color(50, 50, 50),
-    ]);
-
-    k.add([
-      k.text("Age: 18", { size: 24 }),
-      k.pos(MARGIN + 20, k.height() - BAR_HEIGHT - MARGIN + 20),
-      k.color(255, 255, 255),
-      k.fixed(),
-    ]);
+  
+    
 
     // ----- WORLD GEOMETRY -----
     // Screen viewport (camera) size
@@ -83,10 +87,38 @@ export default function Game() {
     const worldY = MAP_MARGIN - (worldSize - baseSize); // extend upwards so there's plenty of space to scroll
 
     // Inner playable rect (for grid drawing)
-    const innerX = worldX + BORDER_THICK;
-    const innerY = worldY + BORDER_THICK;
-    const innerW = worldW - BORDER_THICK * 2;
-    const innerH = worldH - BORDER_THICK * 2;
+    // const innerX = worldX + BORDER_THICK;
+    // const innerY = worldY + BORDER_THICK;
+    // const innerW = worldW - BORDER_THICK * 2;
+    // const innerH = worldH - BORDER_THICK * 2;
+
+// ----- WORLD GEOMETRY -----
+
+// ... (keep all your size calculation code above)
+
+// --- TEMPORARY DEBUGGING TEST ---
+// Comment out your old calculation lines for innerX, innerY, etc.
+const innerX = worldX + BORDER_THICK;
+const innerY = worldY + BORDER_THICK;
+const innerW = worldW - BORDER_THICK * 2;
+const innerH = worldH - BORDER_THICK * 2;
+
+// Use these simple values instead to force the world to be visible
+// const innerX = 0;
+// const innerY = 0;
+// const innerW = k.width();
+// const innerH = k.height();
+// --- END DEBUGGING TEST ---
+
+
+// World fill (this should now appear)
+k.add([
+    k.rect(innerW, innerH),
+    k.pos(innerX, innerY),
+    k.color(20, 40, 60),
+]);
+
+// ... your loops for adding grass will now use these new coordinates
 
     // World fill
     k.add([
@@ -97,7 +129,7 @@ export default function Game() {
 
     // ----- GRID AESTHETIC -----
     // Draw light grid lines inside the world
-    const GRID = 64; // cell size
+  
     // Vertical lines
     for (let x = innerX + GRID; x < innerX + innerW; x += GRID) {
       k.add([
@@ -117,6 +149,39 @@ export default function Game() {
         // k.opacity(0.25),
       ]);
     }
+
+
+    // Adding tiles
+
+    for (let y = innerY; y < innerY + innerH; y += GRID) {
+    for (let x = innerX; x < innerX + innerW; x += GRID) {
+        k.add([
+            k.sprite("grass"),
+            k.pos(x, y),
+            // Add a z-index to ensure it's drawn behind the player
+            k.z(0), 
+            k.scale(GRID/18),
+        ]);
+    }
+}
+
+
+      k.add([
+      k.rect(k.width() - MARGIN * 2, BAR_HEIGHT),
+      k.pos(MARGIN, k.height() - BAR_HEIGHT - MARGIN),
+      k.fixed(),
+      k.color(50, 50, 50),
+      k.z(2),
+    ]);
+
+    k.add([
+      k.text("Age: 18", { size: 24 }),
+      k.pos(MARGIN + 20, k.height() - BAR_HEIGHT - MARGIN + 20),
+      k.color(255, 255, 255),
+      k.fixed(),
+      k.z(2),
+    ]);
+
 
     // ----- WORLD BORDERS WITH OUTLINE -----
     // We draw each border piece with a darker outer outline under a lighter main bar.
@@ -154,6 +219,7 @@ export default function Game() {
       k.area(),
       k.pos(worldX + worldW / 2, worldY + worldH / 2),
       k.anchor("center"),
+      k.z(1)
     ]);
 
     // Input
@@ -161,6 +227,38 @@ export default function Game() {
     k.onKeyDown("a", () => mainCharacter.move(-SPEED, 0));
     k.onKeyDown("s", () => mainCharacter.move(0, SPEED));
     k.onKeyDown("d", () => mainCharacter.move(SPEED, 0));
+
+
+    // Hud stats
+
+    for (let i=0; i < 3; i++) {
+
+        if (i+1 <= playerStats.health) {
+             k.add([
+                k.sprite("heart"),
+            k.pos(i*50,0),
+            k.fixed(),
+        ])
+        } else {
+            k.add([
+                k.sprite("heart-o"),
+            k.pos(i*50,0),
+            k.fixed(),
+        ])
+        }
+       
+    }
+
+   
+
+    
+
+    k.add([
+        k.text(`Money: $${playerStats.money}`, { size: 24 }),
+        k.pos(0,40),
+        k.fixed(),
+        
+    ])
 
     // ----- CAMERA FOLLOW (centered unless hitting world edges) -----
     function clampCamToWorld(px: number, py: number) {
