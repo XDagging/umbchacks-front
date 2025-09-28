@@ -21,6 +21,7 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
   const hasGameStarted = useRef<any>(null);
 
   const moneyRef = useRef<any>(null);
+  const allProjectiles = useRef<any>([]);
 
   const mainMusic = useRef<any>(null);
   const [dialogueState, setDialogueState] = useState(-1);
@@ -39,6 +40,7 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
     isInvincible: false,
     opacity: 1,
     invincibilityTimer: 0,
+    round: 1,
   });
 
   const [dialogue, setDialogue] = useState("");
@@ -114,7 +116,7 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
     k.loadSprite("questionBlock", "questionBlock.png")
     k.loadSprite("coin", "coin.png", {
       
-      sliceX: 4,
+      sliceX: 9,
       sliceY: 1,
       anims: {
         move: {
@@ -125,6 +127,12 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
         }
       }
     })
+
+    k.loadSprite("thrower", "ThrowerDino.png", {
+      sliceX: 12,
+      // singular: true,
+      sliceY: 1
+    });
   
 
     k.loadCrew("sprite", "heart-o");
@@ -195,6 +203,10 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
       k.anchor("topright"),
     ]);
 
+
+
+    
+
     staminaGroup.add([
       k.text("Stamina", { size: 24 }),
       k.pos(-STAMINA_BAR_WIDTH / 2, STAMINA_BAR_HEIGHT / 2),
@@ -205,8 +217,24 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
     // Grass tiles
     for (let y = innerY; y < innerY + innerH; y += GRID) {
       for (let x = innerX; x < innerX + innerW; x += GRID) {
+          // const dir = k.vec2(mainCharacter.pos).sub(enemy.pos).unit();
+        if (0.005*playerState.current.round>Math.random()) {
+           const myGroup = k.add([ k.pos(x,y), "volatility"]);
+      myGroup.add([k.sprite("volatility"), k.z(1), k.scale(0.3)]);
+      // myGroup.add([k.text("Debt", { size: 8 }), k.pos(0, 30), k.anchor("center"), k.color(255, 255, 255)]);
+      allEnemies.current = [...allEnemies.current, myGroup];
+        }
 
-        if (0.02>Math.random()) {
+
+        if (0.001*playerState.current.round>Math.random()) {
+          const newEnemy = k.add([k.sprite("thrower"), k.z(1), k.scale(2), k.pos(x,y), "thrower", {
+            fireCooldown: 0,
+          }]);
+
+           allEnemies.current = [...allEnemies.current, newEnemy]
+        }
+
+        if (0.02*(playerState.current.round/2)>Math.random()) {
           
           k.add([
             k.sprite("coin"), k.pos(x,y), k.z(1), k.scale(GRID/64), "coin",
@@ -282,17 +310,6 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
       })
 
 
-      // for (let y = innerY; y < innerY + innerH; y += GRID) {
-      // for (let x = innerX; x < innerX + innerW; x += GRID) {
-
-        // if (0.02>Math.random()) {
-        //   k.add([
-        //     k.sprite("coin"), k.pos(x,y), k.z(1), k.scale(GRID/64), "coin",
-        //     k.area()
-        //   ])
-        // }
-
-
       const totalX = ((innerY + innerH) / Math.ceil(Math.random()*GRID));
       const totalY = ((innerX + innerW) / Math.ceil(Math.random()*GRID));
       
@@ -311,6 +328,7 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
     })
     mainCharacter.onCollide("questionBlock", (person: any) => {
         console.log("we got a question ladies")
+        k.go("pause")
         triggerQuestion();
 
       
@@ -383,18 +401,75 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
 
     // Enemies
     const SPEED_BOOST_DURATION = 5;
-    for (let i = 0; i < 5; i++) {
-      const myGroup = k.add([k.pos(0, 0), "volatility"]);
-      myGroup.add([k.sprite("volatility"), k.z(1), k.scale(0.3)]);
-      myGroup.add([k.text("Debt", { size: 8 }), k.pos(0, 30), k.anchor("center"), k.color(255, 255, 255)]);
-      allEnemies.current = [...allEnemies.current, myGroup];
-    }
+    // for (let i = 0; i < 5; i++) {
+     
+
+      mainCharacter.onCollide("projectile", (projectile) => {
+        if (!playerState.current.isInvincible) {
+            k.play("hurt", { volume: 1 });
+            playerState.current.health -= 1;
+    
+
+          // Update hearts
+          const heartObjects = k.get("ui-heart");
+          heartObjects.sort((a, b) => a.pos.x - b.pos.x);
+          for (let i = 0; i < heartObjects.length; i++) {
+            const heart = heartObjects[i];
+            if (i < playerState.current.health) {
+              heart.use(k.sprite("heart"));
+            } else {
+              heart.destroy();
+            }
+          }
+
+           playerState.current.isSpeedBoosted = true;
+          playerState.current.speedBoostTimer = 2;
+          playerState.current.isInvincible = true;
+          playerState.current.invincibilityTimer = 2;
+          playerState.current.opacity = 0.5;
+            // Similar logic to update hearts and check for game over...
+        }
+        projectile.destroy();
+    });
+
+    // }
 
     for (const enemy of allEnemies.current) {
+      
       enemy.onUpdate(() => {
         const dir = k.vec2(mainCharacter.pos).sub(enemy.pos).unit();
-        enemy.move(dir.scale(25));
+        // console.log("this is the enemy", enemy)
+        enemy.move(dir.scale(25 * (1.2*playerState.current.round)));
+     
 
+          if (enemy.is("thrower")) {
+            // Only fire if cooldown is ready
+           
+                // const projectileDir = k.vec2(mainCharacter.pos).sub(enemy.pos).unit();
+                if (enemy.fireCooldown > 0) {
+                  enemy.fireCooldown -= k.dt(); // k.dt() is "delta time"
+                }
+                if (enemy.fireCooldown <= 0) {
+                const projectileDir = k.vec2(mainCharacter.pos).sub(enemy.pos).unit();
+                const asdf = k.add([
+                    k.rect(8, 8),
+                    k.color(255, 0, 0),
+                    k.pos(enemy.pos),
+                    k.move(projectileDir, 300), // Make the projectile move
+                    k.area(),
+                    k.z(1),
+
+                    "projectile",
+                ]);
+                // Disappears after 4 seconds
+                k.wait(4, () => {
+                  asdf.destroy();
+                })
+                // Reset the cooldown
+                enemy.fireCooldown = 2; // Fire every 2 seconds
+            }
+            }
+        
         // Hit detection
         if (enemy.pos.dist(mainCharacter.pos) < 30 && !playerState.current.isInvincible) {
           k.play("hurt", { volume: 1 });
@@ -469,15 +544,45 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
 
     })
 
-    k.scene("pause", () => {
-      // This pauses the game. 
+  k.scene("pause", () => {
+    // Add a semi-transparent background
+    k.add([
+        k.rect(k.width(), k.height()),
+        k.color(0, 0, 0),
+        k.opacity(0.5),
+        k.fixed(), // Makes it stay in place regardless of camera
+    ]);
 
+    // Add the menu text
+    k.add([
+        k.text("Paused", { size: 50 }),
+        k.pos(k.center()),
+        k.anchor("center"),
+        k.fixed(),
+    ]);
 
+    k.add([
+        k.text("Press 'p' to Resume", { size: 24 }),
+        k.pos(k.center().add(0, 80)),
+        k.anchor("center"),
+        k.fixed(),
+    ]);
+    
+    k.add([
+        k.text("Press 'q' to Quit", { size: 24 }),
+        k.pos(k.center().add(0, 120)),
+        k.anchor("center"),
+        k.fixed(),
+    ]);
 
+    // When "p" is pressed again, pop the pause scene to return to the game
+   
 
-
-    })
-
+    // Optional: Add a quit button
+    k.onKeyPress("q", () => {
+        k.go("game"); // Or go to a "menu" scene
+    });
+});
     k.go("game");
 
 
