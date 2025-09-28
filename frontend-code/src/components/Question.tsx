@@ -49,6 +49,9 @@ export default function PhoneComponentWithMCQ(props: PhoneProps) {
     }
   }, [props.x]);
 
+
+  
+
   async function handleGenerate() {
     console.log("this is being called")
     setLoading(true);
@@ -89,14 +92,19 @@ export default function PhoneComponentWithMCQ(props: PhoneProps) {
     
     if (isAnswered) return; // Prevent changing the answer
     setSelectedOption(option.id);
-
-    if (Number(option.id) === mcqData?.answer) {
-        props.setPausedText("Success. You're 100% right.");
-
+    const correct = Number(option.id) === mcqData?.answer;
+    if (correct) {
+      props.setPausedText("Success. You're 100% right.");
     } else {
-      props.setPausedText(`Not so fast... The correct answer was "${mcqData?.options[mcqData.answer-1]}"`);
+      const correctAnswerText = mcqData?.options?.[mcqData.answer - 1]?.text;
+      props.setPausedText(`Not so fast... The correct answer was "${correctAnswerText}"`);
     }
     setIsAnswered(true); // Lock the answer and reveal correctness
+    // inform parent immediately so it can start timers/unpause logic
+    try {
+      props.setAnswered(true);
+    } catch {}
+    if (props.onAnswered) props.onAnswered(correct);
   };
 
   // Helper function to determine the styling for each option button

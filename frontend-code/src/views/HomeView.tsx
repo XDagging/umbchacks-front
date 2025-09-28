@@ -24,6 +24,12 @@ export default function HomeView(props: HomeViewProps) {
   const [runId, setRunId] = useState(0); // forces Game remount on restart
 
   useEffect(() => {
+    console.log("UNPAUSE GOT CHANGED TO", canUnpause)
+
+
+  },[canUnpause])
+
+  useEffect(() => {
     setTimeout(() => {
       setPausedText("");
     }, 5000)
@@ -62,6 +68,7 @@ export default function HomeView(props: HomeViewProps) {
             }}
             // pass a trigger so Game can increment round on wrong answers
             roundIncreaseTrigger={roundIncreaseTrigger}
+            canUnpause={canUnpause}
             key={runId}
             onGameOver={() => setGameOver(true)}
           />
@@ -73,18 +80,23 @@ export default function HomeView(props: HomeViewProps) {
             setPausedText={setPausedText}
             x={sendQuestion}
             onAnswered={(correct: boolean) => {
+              console.log("ON ANSWERED WAS CALLED")
               // mark that the user has answered (phone UI will show feedback)
               setAnswered(true);
               // disallow unpause immediately; allow after delay depending on correctness
               setCanUnpause(false);
               const delay = correct ? 3000 : 5000;
               // If incorrect, bump trigger so Game can increase in-game round
-              if (!correct) setRoundIncreaseTrigger((r) => r + 1);
+              if (!correct) setRoundIncreaseTrigger((r) => { console.log('bumping round trigger', r + 1); return r + 1; });
 
               // After the delay, clear the paused text, allow unpause, and reset answered state
+              
+              console.log("right before", delay);
               setTimeout(() => {
+                console.log("this is happening")
                 setPausedText("");
                 setCanUnpause(true);
+                
                 setAnswered(false);
               }, delay);
             }}
