@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 
 const CreditsView: React.FC = () => {
   const teamMembers = [
-    { name: 'Sebastian', role: 'Lead Developer' },
-    { name: 'Jay', role: 'Game Designer' },
-    { name: 'Adam', role: 'Art & Animation' },
-    { name: 'Daniel', role: 'Sound & Music' },
+    { name: 'Sebastian', role: 'Design, Developer' },
+    { name: 'Jay', role: 'Design, Developer' },
+    { name: 'Adam', role: 'Design, Developer' },
+    { name: 'Daniel', role: 'Design, Developer' },
   ];
 
   return (
