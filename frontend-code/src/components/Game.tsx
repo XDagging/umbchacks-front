@@ -15,9 +15,11 @@ const aka = [
   "Isn't it neat?"
 ];
 let interval: any
+
 export default function Game() {
     const staminaBarRef = useRef<any>(null);
   const hasGameStarted = useRef<any>(null);
+  const mainMusic = useRef<any>(null);
   const [dialogueState, setDialogueState] = useState(-1);
   const dialogueTextRef = useRef<any>(null);
 
@@ -111,9 +113,16 @@ export default function Game() {
       backgroundAudio: true,
       width: Math.floor(window.innerWidth / 6) * 4,
       height: window.innerHeight,
+      
     });
+
+
+    k.scene("main", () => {
+        
     const GRID = 64; // cell size
  
+
+
 
     
     hasGameStarted.current = k;
@@ -121,6 +130,19 @@ export default function Game() {
     k.canvas.style.top = "0px";
     k.canvas.style.left = "0px";
 
+
+    k.loadSound("hurt", "hurt.wav");
+    k.loadSound("soundtrack", "soundtrack.mp3");
+    
+    if (mainMusic==null||mainMusic.current===null) {
+        mainMusic.current = k.play("soundtrack", {
+        loop: true,
+        volume: 0.8
+    })
+    }
+    
+
+    
     // Assets
     k.loadCrew("sprite", "heart-o")
     k.loadCrew("sprite", "heart");
@@ -193,6 +215,9 @@ k.add([
     k.pos(innerX, innerY),
     k.color(20, 40, 60),
 ]);
+
+
+
 
 // ... your loops for adding grass will now use these new coordinates
 
@@ -347,6 +372,8 @@ const MAX_STAMINA = 5000;
 
 k.onUpdate(() => {
 
+
+    
     // Make sure the stamina bar object exists before trying to update it
     if (staminaBarRef.current) {
         // Calculate the percentage of stamina remaining (a value between 0 and 1)
@@ -527,7 +554,16 @@ const INVINCIBILITY_DURATION = 5; // seconds
 
     // Check distance and if the player is NOT invincible
     if (enemy.pos.dist(mainCharacter.pos) < 30 && !playerState.current.isInvincible) {
+
+        k.play("hurt", {
+            volume: 1
+        })
+
         playerState.current.health -= 1;
+        if (playerState.current.health <= 0) {
+            mainMusic.current.stop()
+            k.go("gameover");
+        }
         playerState.current.isSpeedBoosted = true;
         playerState.current.speedBoostTimer = 2;
         console.log("Player hit!");
@@ -615,6 +651,20 @@ const INVINCIBILITY_DURATION = 5; // seconds
       clampPlayerToWorld();
       clampCamToWorld(mainCharacter.pos.x, mainCharacter.pos.y);
     });
+
+    })
+
+    k.scene("gameover", () => {
+        k.text("Game Over", {size: 24})
+
+        k.text("Restart to play again")
+
+
+    })
+
+        k.go("main");
+
+
 
     return () => {
       // cleanup if you ever remount
