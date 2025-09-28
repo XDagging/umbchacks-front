@@ -1,16 +1,19 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Game from "../components/Game";
 import Marquee from "react-fast-marquee";
 import PhoneComponent from "../components/PhoneComponent";
+import x from "../../public/DDD.gif";
+import y from "../../public/grid.apng";
+import { Gamepad2, ReceiptText } from "lucide-react";
 
 export default function HomeView() {
-  const [hasGameStarted, setHasGameStarted] = useState(true);
+  const [hasGameStarted, setHasGameStarted] = useState(false);
 
   return (
     <section className="w-screen h-screen">
       {!hasGameStarted ? (
-        <section className="w-full h-full">
-          <Marquee className="flex items-center justiy-between">
+        <section className="w-full h-full bg-[url('/grid.apng')] bg-cover aspect-auto">
+          <Marquee className="flex items-center justiy-between bg-base-300 py-2 text-lg">
             <p className="font-1 mr-16">You're probably broke</p>
             <p className="font-1 mr-16">
               Let me guess, you blew your money on something stupid again?
@@ -18,6 +21,25 @@ export default function HomeView() {
             <p className="font-1 mr-16">Womp Womp!</p>
             <p className="font-1 mr-16">Cry about it</p>
           </Marquee>
+
+
+       
+
+          <div className="hero h-[90vh] w-full">
+            <div className="hero-content flex flex-col gap-4 items-center">
+               <img src={x} className="h-40 mx-auto animate-bounce"></img>
+              <div className="mt-10 flex flex-col w-full gap-2">
+                <button className="btn animate-bounce btn-primary font-1 text-lg scale-150 my-3" onClick={() => {
+                  setHasGameStarted(true);
+                }}>Play now <Gamepad2 /></button>
+<button className="btn btn-outline font-1 text-lg scale-150 my-3">Instructions<ReceiptText /></button>
+<p className="text-center font-1 text-2xl">or</p>
+<button className="btn btn-outline font-1 text-lg scale-150 my-3">See credits</button>
+              </div>
+            </div>
+           
+
+          </div>
         </section>
       ) : (
         <div className="grid grid-cols-6 items-start justify-start w-screen h-full">

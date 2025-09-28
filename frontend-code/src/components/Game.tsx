@@ -662,7 +662,7 @@ const INVINCIBILITY_DURATION = 5; // seconds
 
     })
 
-        k.go("main");
+    k.go("main");
 
 
 
