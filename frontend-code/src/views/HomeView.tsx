@@ -14,9 +14,7 @@ type HomeViewProps = {
   onGameOver: () => void;
 }
 
-
 export default function HomeView(props: HomeViewProps) {
-  const [hasGameStarted, setHasGameStarted] = useState(false);
   const [pausedText, setPausedText] = useState("");
   const [sendQuestion, setSendQuestion] = useState(0);
   const [gameOver, setGameOver] = useState(false);
@@ -26,121 +24,73 @@ export default function HomeView(props: HomeViewProps) {
   const [runId, setRunId] = useState(0); // forces Game remount on restart
 
   useEffect(() => {
-
-
     setTimeout(() => {
       setPausedText("");
+    }, 5000)
+  }, [pausedText])
 
-
-    },5000)
-
-
-  },[pausedText])
-
-    useEffect(() => {
-      
-
-      if (answered) {
-        console.log("this was called chats")
-        setTimeout(() => {
-          setAnswered(false);
-        },5000)
-      }
-      
-  
-  
-  
-    },[answered])
+  useEffect(() => {
+    if (answered) {
+      console.log("this was called chats")
+      setTimeout(() => {
+        setAnswered(false);
+      }, 5000)
+    }
+  }, [answered])
 
   const handleRestart = () => {
     // hide game-over, remount the Game component
     setGameOver(false);
     setRunId((r) => r + 1);
-    setHasGameStarted(true);
   };
 
   if (gameOver) {
     return <GameOverScreen onRestart={handleRestart} />;
   }
 
+  // Removed the old main menu - now this component only handles the actual game
   return (
     <section className="w-screen h-screen">
-      {!hasGameStarted ? (
-        <section className="w-full h-full bg-[url('/grid.apng')] bg-cover aspect-auto">
-          <Marquee className="flex items-center justiy-between py-2 text-lg">
-            <p className="font-1 mr-16">You're probably broke</p>
-            <p className="font-1 mr-16">
-              Let me guess, you blew your money on something stupid again?
-            </p>
-            <p className="font-1 mr-16">Womp Womp!</p>
-            <p className="font-1 mr-16">Cry about it</p>
-          </Marquee>
-
-          <div className="hero h-[90vh] w-full">
-            <div className="hero-content flex flex-col gap-4 items-center">
-              <img src={x} className="h-40 mx-auto animate-bounce"></img>
-              <div className="mt-10 flex flex-col w-full gap-2">
-                <button
-                  className="btn animate-bounce btn-primary font-1 text-lg scale-150 my-3"
-                  onClick={() => {
-                    setHasGameStarted(true);
-                  }}
-                >
-                  Play now <Gamepad2 />
-                </button>
-                <button className="btn btn-outline font-1 text-lg scale-150 my-3">
-                  Instructions
-                  <ReceiptText />
-                </button>
-                <p className="text-center font-1 text-2xl">or</p>
-                <button className="btn btn-outline font-1 text-lg scale-150 my-3">
-                  See credits
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-      ) : (
-        <div className="grid grid-cols-6 items-start justify-start w-screen h-full">
-          <div className="col-span-4 w-full h-full">
-            {/* Pass onGameOver; key forces a fresh Kaplay instance on restart */}
-            <Game hasAnswered={answered}
+      <div className="grid grid-cols-6 items-start justify-start w-screen h-full">
+        <div className="col-span-4 w-full h-full">
+          {/* Pass onGameOver; key forces a fresh Kaplay instance on restart */}
+          <Game 
+            hasAnswered={answered}
             pausedText={pausedText}
-              triggerQuestion={() => {
-                setSendQuestion((prev) => prev + 1);
-              }}
-              // pass a trigger so Game can increment round on wrong answers
-              roundIncreaseTrigger={roundIncreaseTrigger}
-              key={runId}
-              onGameOver={() => setGameOver(true)}
-            />
-          </div>
-
-          <div className="col-span-2 w-full h-full relative">
-            <PhoneComponentWithMCQ
-              setAnswered={setAnswered}
-              setPausedText={setPausedText}
-              x={sendQuestion}
-              onAnswered={(correct: boolean) => {
-                // mark that the user has answered (phone UI will show feedback)
-                setAnswered(true);
-                // disallow unpause immediately; allow after delay depending on correctness
-                setCanUnpause(false);
-                const delay = correct ? 3000 : 5000;
-                // If incorrect, bump trigger so Game can increase in-game round
-                if (!correct) setRoundIncreaseTrigger((r) => r + 1);
-
-                // After the delay, clear the paused text, allow unpause, and reset answered state
-                setTimeout(() => {
-                  setPausedText("");
-                  setCanUnpause(true);
-                  setAnswered(false);
-                }, delay);
-              }}
-            />
-          </div>
+            triggerQuestion={() => {
+              setSendQuestion((prev) => prev + 1);
+            }}
+            // pass a trigger so Game can increment round on wrong answers
+            roundIncreaseTrigger={roundIncreaseTrigger}
+            key={runId}
+            onGameOver={() => setGameOver(true)}
+          />
         </div>
-      )}
+
+        <div className="col-span-2 w-full h-full relative">
+          <PhoneComponentWithMCQ
+            setAnswered={setAnswered}
+            setPausedText={setPausedText}
+            x={sendQuestion}
+            onAnswered={(correct: boolean) => {
+              // mark that the user has answered (phone UI will show feedback)
+              setAnswered(true);
+              // disallow unpause immediately; allow after delay depending on correctness
+              setCanUnpause(false);
+              const delay = correct ? 3000 : 5000;
+              // If incorrect, bump trigger so Game can increase in-game round
+              if (!correct) setRoundIncreaseTrigger((r) => r + 1);
+
+              // After the delay, clear the paused text, allow unpause, and reset answered state
+              setTimeout(() => {
+                setPausedText("");
+                setCanUnpause(true);
+                setAnswered(false);
+              }, delay);
+            }}
+          />
+        </div>
+      </div>
     </section>
   );
 }
