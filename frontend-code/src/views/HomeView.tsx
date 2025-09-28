@@ -30,9 +30,9 @@ export default function HomeView() {
     <section className="w-screen h-screen">
       {!hasGameStarted ? (
         <section className="w-full h-full bg-[url('/grid.apng')] bg-cover aspect-auto">
-          <Marquee className="flex items-center justiy-between bg-base-300 py-2 text-lg">
+          <Marquee className="flex items-center justiy-between py-2 text-lg">
             <p className="font-1 mr-16">You're probably broke</p>
-            <p className="font-1 mr-16">
+            <p className="font-1 mr-16">  
               Let me guess, you blew your money on something stupid again?
             </p>
             <p className="font-1 mr-16">Womp Womp!</p>
