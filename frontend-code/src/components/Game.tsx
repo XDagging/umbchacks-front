@@ -2,11 +2,17 @@
 import React, { useRef, useEffect, useState } from "react";
 import { crew } from "@kaplayjs/crew";
 import kaplay from "kaplay";
+// import { getHeapSnapshot } from "v8";
 
 type GameProps = {
   onGameOver: () => void;
   triggerQuestion: () => void;
   pausedText: string;
+  hasAnswered: boolean;
+  // bump this counter when a wrong answer occurs so Game can react (increase round)
+  roundIncreaseTrigger?: number;
+  // parent-controlled flag that indicates whether unpause is permitted
+  canUnpause?: boolean;
 };
 
 const aka = [
@@ -17,15 +23,16 @@ const aka = [
 ];
 let timeout: any;
 let hasRan = false;
-export default function Game({ onGameOver, triggerQuestion }: GameProps) {
+export default function Game({ onGameOver, triggerQuestion, pausedText: _pausedText, hasAnswered: _hasAnswered, roundIncreaseTrigger, canUnpause }: GameProps) {
   const staminaBarRef = useRef<any>(null);
   const hasGameStarted = useRef<any>(null);
   const currentAnimRef = useRef<string>("idleDown");
-
+  const pauseTimer = useRef<any>(null);
   const moneyRef = useRef<any>(null);
   const allProjectiles = useRef<any>([]);
 
   const [punishRound, setPunishRound] = useState(false);
+  const lastRoundTrigger = useRef<number>(0);
 
   const mainMusic = useRef<any>(null);
   const [dialogueState, setDialogueState] = useState(-1);
@@ -49,6 +56,24 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
     }
 
   },[punishRound])
+
+  // react to roundIncreaseTrigger prop changes - increment in-game round and punish
+  useEffect(() => {
+    if (typeof roundIncreaseTrigger === "undefined") return;
+    // first time, just record the value
+    if (lastRoundTrigger.current === 0) {
+      lastRoundTrigger.current = roundIncreaseTrigger;
+      return;
+    }
+    if (roundIncreaseTrigger > lastRoundTrigger.current) {
+      // increase in-game round and mark punishRound so other logic can respond
+      try {
+        playerState.current.round += 1;
+      } catch (e) {}
+      setPunishRound(true);
+    }
+    lastRoundTrigger.current = roundIncreaseTrigger;
+  }, [roundIncreaseTrigger]);
 
 
   const allEnemies = useRef<any[]>([]);
@@ -424,7 +449,7 @@ k.add([
 
       hey.destroy();
     })
-    mainCharacter.onCollide("questionBlock", (person: any) => {
+  mainCharacter.onCollide("questionBlock", (_person: any) => {
         console.log("we got a question ladies")
         k.go("pause");
         triggerQuestion();
@@ -546,8 +571,7 @@ k.add([
     moneyRef.current = k.add([k.text(`Money: $${playerState.current.money}`, { size: 24 }), k.pos(MARGIN, MARGIN + 50), k.z(2), k.fixed()]);
 
     // Enemies
-    const SPEED_BOOST_DURATION = 5;
-    // for (let i = 0; i < 5; i++) {
+  // for (let i = 0; i < 5; i++) {
      
 
       mainCharacter.onCollide("projectile", (projectile) => {
@@ -724,22 +748,30 @@ k.add([
         k.anchor("center"),
         k.fixed(),
     ]);
-    
-    k.add([
-        k.text("Press 'q' to Quit", { size: 24 }),
-        k.pos(k.center().add(0, 120)),
-        k.anchor("center"),
-        k.fixed(),
-    ]);
 
+    pauseTimer.current = k.add([
+      k.text("", {size: 18}),
+      k.pos(k.center().add(0, 120)),
+      k.anchor("center"),
+      k.fixed()
+    ])
+    
     // When "p" is pressed again, pop the pause scene to return to the game
    
 
     // Optional: Add a quit button
-    k.onKeyPress("q", () => {
-        k.go("game"); // Or go to a "menu" scene
+    k.onKeyPress("p", () => {
+      // Only unpause when the parent explicitly allows it via canUnpause
+      if (canUnpause) {
+        k.go("game");
+      } else {
+        pauseTimer.current.text = "Wait a few seconds to continue playing.";
+      }
     });
 });
+
+
+
     k.go("game");
 
 

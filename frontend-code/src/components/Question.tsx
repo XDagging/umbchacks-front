@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import type { Dispatch, SetStateAction} from "react";
-import { Check, ChevronLeft, Phone, Video } from "lucide-react";
+import type { Dispatch, SetStateAction } from "react";
+import { Check, ChevronLeft, Phone, Video, X } from "lucide-react";
 
 interface MCQOption {
   id: string;
@@ -10,60 +10,54 @@ interface MCQOption {
 interface MCQData {
   question: string;
   options: MCQOption[];
-  answer?: number;
+  answer: number;
 }
 
-const endpoint = "https://localhost"
+const endpoint = "https://localhost";
 
 type PhoneProps = {
-  x: number
+  x: number;
   setPausedText: Dispatch<SetStateAction<string>>;
+  setAnswered: Dispatch<SetStateAction<boolean>>;
+  // new callback: report whether the selected answer was correct
+  onAnswered?: (correct: boolean) => void;
+};
 
-  
-}
-// let interval: any;
 let firstRun: boolean = true;
+
 export default function PhoneComponentWithMCQ(props: PhoneProps) {
   const [mcqData, setMcqData] = useState<MCQData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  // const [loading, setLoading] = useState(false);
-  const defaultTimerAmt = 25000;
+  const [isAnswered, setIsAnswered] = useState<boolean>(false);
 
-  // const [questionTimer, setQuestionTimer] = useState<number>(Date.now());
- useEffect(() => {
-      // this would change whenever there is a new person
-
-
-      if (!firstRun&&mcqData===null&&!loading) {
-        console.log("we r generating chat")
-        handleGenerate();
-      }
-
-      firstRun = false;
-    }, [props.x])
-
+  useEffect(() => {
+    // This effect runs when the component mounts and whenever props.x changes.
+    // It's designed to fetch a new question for each new round signaled by the parent.
+    if (!firstRun) {
+      handleGenerate();
+    }
+    firstRun = false;
+  }, [props.x]);
 
   async function handleGenerate() {
-
-
     setLoading(true);
     setSelectedOption(null);
+    setIsAnswered(false);
+    setMcqData(null); // Clear previous question to show loading state
 
-    const prompt = 'Generate one multiple-choice financial question. Topics: Personal Finance, Corporate Finance, Investment Strategies, Financial Markets, Banking & Financial Institutions, Insurance & Risk Management, Macroeconomics & Finance, Behavioral Finance, Global Trade & Finance, Sustainable Finance, Payments & Banking Tech, Bitcoin & Altcoins, Decentralized Finance (DeFi), Crypto Regulation.   Requirements:   Question length: ≤150 characters.   Each answer length: ≤60 characters.   Exactly 4 answers in the "choices" array.   The correct answer must be placed at a random index (1–4).   The "answer" field must be the number 1, 2, 3, or 4 (not the text).   Return ONLY valid JSON in this format, with no extra text:   {  "question": "the question",  "choices": ["answer 1", "answer 2", "answer 3", "answer 4"],  "answer": 1}';
-
-    const response = await fetch(endpoint+"/api/gemini", {
-
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt }),
-    });
-    const data = await response.json();
+    const prompt =
+      'Generate one multiple-choice financial question. Topics: Personal Finance, Corporate Finance, Investment Strategies, Financial Markets, Banking & Financial Institutions, Insurance & Risk Management, Macroeconomics & Finance, Behavioral Finance, Global Trade & Finance, Sustainable Finance, Payments & Banking Tech, Bitcoin & Altcoins, Decentralized Finance (DeFi), Crypto Regulation. Requirements: Question length: ≤150 characters. Each answer length: ≤60 characters. Exactly 4 answers in the "choices" array. The correct answer must be placed at a random index (1–4). The "answer" field must be the number 1, 2, 3, or 4 (not the text). Return ONLY valid JSON in this format, with no extra text: { "question": "the question", "choices": ["answer 1", "answer 2", "answer 3", "answer 4"], "answer": 1}';
 
     try {
-      const parsed = data.result
+      const response = await fetch(endpoint + "/api/gemini", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await response.json();
+      const parsed = data.result;
 
-      console.log("this is the parsed data")
       setMcqData({
         question: parsed.question,
         options: parsed.choices.map((choice: string, idx: number) => ({
@@ -74,13 +68,41 @@ export default function PhoneComponentWithMCQ(props: PhoneProps) {
       });
     } catch (err) {
       console.error("Failed to parse question:", err);
+      // Optionally, set an error state here to show in the UI
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   const handleOptionClick = (option: MCQOption) => {
+    if (isAnswered) return; // Prevent changing the answer
     setSelectedOption(option.id);
+    setIsAnswered(true); // Lock the answer and reveal correctness
+  };
+
+  // Helper function to determine the styling for each option button
+  const getOptionClasses = (option: MCQOption) => {
+    const baseClasses = "w-full p-4 rounded-2xl border-2 transition-all duration-300 ease-in-out transform flex items-center justify-between text-left";
+
+    if (!isAnswered) {
+      return `${baseClasses} bg-white border-gray-200 text-gray-800 hover:border-blue-300 hover:bg-blue-50 active:scale-95`;
+    }
+
+    const isCorrect = mcqData?.answer === Number(option.id);
+    const isSelected = selectedOption === option.id;
+
+    if (isCorrect) {
+      // Style for the correct answer (always green)
+      return `${baseClasses} bg-green-500 border-green-600 text-white shadow-lg scale-105 cursor-default`;
+    }
+    
+    if (isSelected && !isCorrect) {
+      // Style for a selected, incorrect answer (red)
+      return `${baseClasses} bg-red-500 border-red-600 text-white shadow-lg cursor-default`;
+    }
+    
+    // Style for other non-selected, incorrect answers (faded)
+    return `${baseClasses} bg-gray-100 border-gray-200 text-gray-500 opacity-60 cursor-default`;
   };
 
   return (
@@ -98,24 +120,12 @@ export default function PhoneComponentWithMCQ(props: PhoneProps) {
 
         {/* Content */}
         <div className="h-full overflow-y-auto p-6">
-
-          
-          {!mcqData ? (
-            <>
-            
-              <h2 className="font-1 font-bold">Waiting...</h2>
-              {/* <h1 className="font-1 text-3xl text-center animate-bounce text-error">Ring Ring</h1> */}
-            
-            </>
-            // <div className="flex flex-col items-center justify-center h-full gap-4">
-            //   <button
-            //     onClick={handleGenerate}
-            //     disabled={loading}
-            //     className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold"
-            //   >
-            //     {loading ? "Generating..." : "Generate Question"}
-            //   </button>
-            // </div>
+          {!mcqData || loading ? (
+            <div>
+              <h2 className="font-1 font-bold text-center">
+                {loading ? "Generating new question..." : "Waiting..."}
+              </h2>
+            </div>
           ) : (
             <>
               {/* Question */}
@@ -131,51 +141,42 @@ export default function PhoneComponentWithMCQ(props: PhoneProps) {
                   <button
                     key={option.id}
                     onClick={() => handleOptionClick(option)}
-                    className={`w-full p-4 rounded-2xl border-2 transition-all duration-200 ease-in-out transform active:scale-95 ${
-                      selectedOption === option.id
-                        ? "bg-green-500 border-green-600 text-white shadow-lg"
-                        : "bg-white border-gray-200 text-gray-800 hover:border-blue-300 hover:bg-blue-50"
-                    }`}
+                    disabled={isAnswered}
+                    className={getOptionClasses(option)}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-medium flex-1 text-left">
-                        {option.text}
-                      </span>
-                      <div
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                          selectedOption === option.id
-                            ? "bg-white border-white"
-                            : "border-gray-300"
-                        }`}
-                      >
-                        {selectedOption === option.id && (
-                          <Check className="w-4 h-4 text-green-500" />
+                    <span className="text-lg font-medium flex-1">
+                      {option.text}
+                    </span>
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center bg-white/20 ml-2">
+                        {isAnswered && mcqData?.answer === Number(option.id) && (
+                            <Check className="w-5 h-5 text-white" />
                         )}
-                      </div>
+                        {isAnswered && selectedOption === option.id && mcqData?.answer !== Number(option.id) && (
+                            <X className="w-5 h-5 text-white" />
+                        )}
                     </div>
                   </button>
                 ))}
               </div>
 
-              {/* Continue */}
-              {selectedOption && (
+              {/* Continue Button */}
+              {isAnswered && (
                 <div className="mt-8">
-                  <button onClick={() => {
-                    if (Number(selectedOption) === mcqData.answer) {
-                      // They got it right. 
-
-                      props
-
-                      // this should unpause and make the next round go by. 
-
-                    } else {
-
-
-                      // It should start the round instantly.
-                      
-                      // Remove a life
-                    }
-                  }} className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl transition-colors duration-200">
+                  <button
+                    onClick={() => {
+                        const correct = Number(selectedOption) === mcqData.answer;
+                        if (correct) {
+                          props.setPausedText("Success. You're 100% right.");
+                        } else {
+                          const correctAnswerText = mcqData.options[mcqData.answer - 1]?.text;
+                          props.setPausedText(`Not so fast... The correct answer was "${correctAnswerText}"`);
+                        }
+                        props.setAnswered(true); // Signal to parent that round is over
+                        // report correctness to parent if provided
+                        if (props.onAnswered) props.onAnswered(correct);
+                      }}
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl transition-colors duration-200"
+                  >
                     Continue
                   </button>
                 </div>
