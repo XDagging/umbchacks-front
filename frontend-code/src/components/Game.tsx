@@ -435,7 +435,7 @@ k.onKeyDown("shift", () => {
     console.log()
 
     // --- Stamina Logic ---
-    if (isSprinting && playerState.current.stamina > 0 && playerState.current.isSpeedBoosted!) {
+    if ((isSprinting || playerState.current.isSpeedBoosted!) && playerState.current.stamina > 0) {
         console.log("the stamina is being drained here")
         // 1. Sprinting: Drain stamina and increase speed
         playerState.current.stamina -= 5; // Drain 5 per frame
@@ -510,7 +510,7 @@ const INVINCIBILITY_DURATION = 5; // seconds
     ])
 
         const text = myGroup.add([
-      k.text("Volatility", { size: 8 }),
+      k.text("Debt", { size: 8 }),
     //   k.color("red"),
       k.pos(0, 30), // Centered horizontally, offset below the sprite
       k.anchor("center"),
