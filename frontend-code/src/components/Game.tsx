@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 
 import { crew } from "@kaplayjs/crew";
 import kaplay from "kaplay";
+// import { allowedNodeEnvironmentFlags } from "process";
 type GameProps = {
   onGameOver: () => void;
   triggerQuestion: () => void;
@@ -209,12 +210,30 @@ export default function Game({ onGameOver, triggerQuestion, roundIncreaseTrigger
       for (let y = innerY; y < innerY + innerH; y += GRID) {
         for (let x = innerX; x < innerX + innerW; x += GRID) {
           if (0.005 * playerState.current.round > Math.random()) {
-            const enemy = k.add([k.pos(x, y), "volatility"]);
-            enemy.add([k.sprite("volatility"), k.z(2), k.scale(0.3)]);
+            const enemy = k.add([
+                k.sprite("volatility"),
+                k.pos(x, y),
+                k.scale(0.3),
+                k.z(2),
+                k.area(),
+                "volatility",
+                "mob",
+            ]);
+            // enemy.add([k.sprite("volatility"), k.z(2), k.scale(0.3)]);
             allEnemies.push(enemy);
           }
           if (0.001 * playerState.current.round > Math.random()) {
-            const enemy = k.add([k.sprite("thrower"), k.z(1), k.scale(2), k.pos(x, y), "thrower", { fireCooldown: 0 }]);
+           const enemy = k.add([
+                k.sprite("thrower"),
+                k.pos(x, y),
+                k.scale(2),
+                k.z(1),
+                k.area(),
+                "thrower",
+                "mob",
+                { fireCooldown: 0 },
+            ]);
+           
             allEnemies.push(enemy);
           }
           if (0.02 * (playerState.current.round / 2) > Math.random()) {
@@ -249,7 +268,35 @@ export default function Game({ onGameOver, triggerQuestion, roundIncreaseTrigger
       addBorderStrip(BORDER_THICK, worldH, worldX, worldY);
       addBorderStrip(worldW, BORDER_THICK, worldX, worldY + worldH - BORDER_THICK);
       addBorderStrip(BORDER_THICK, worldH, worldX + worldW - BORDER_THICK, worldY);
-      
+
+
+      const BULLET_SPEED = 400;
+      k.onMousePress(() => {
+        const dir = k.mousePos().sub(mainCharacter.pos).unit();
+
+        k.add([
+          k.rect(12, 4),
+          k.pos(mainCharacter.pos),
+          k.anchor("center"),
+          k.color(0, 255, 0),
+          k.area(),
+          k.move(dir, BULLET_SPEED),
+          k.opacity(0.5),
+          k.lifespan(3), // Bullet disappears after 3 seconds
+          "bullet",
+        ]);
+      });
+
+      k.onCollide("bullet", "mob", (bullet, mob) => {
+        bullet.destroy();
+        mob.destroy();
+        // Optional: Add score, particles, etc.
+      });
+      // k.onCollide("bullet", "volatility", (bullet, mob) => {
+      //   bullet.destroy();
+      //   mob.destroy();
+      //   // Optional: Add score, particles, etc.
+      // });
       // Player
       const SPEED = 200;
       const PLAYER_RADIUS = 16;
@@ -274,6 +321,22 @@ export default function Game({ onGameOver, triggerQuestion, roundIncreaseTrigger
         playerState.current.money += 1;
         moneyRef.current.text = `Money: $${playerState.current.money}`;
         coin.destroy();
+
+        const randomX = k.rand(innerX, innerX + innerW);
+        const randomY = k.rand(innerY, innerY + innerH);
+         const newMob = k.add([
+            k.sprite("volatility"),
+            k.pos(randomX, randomY),
+            k.scale(0.3),
+            k.z(2),
+            k.area(),
+            "volatility",
+            "mob",
+        ]);
+
+
+        allEnemies.push(newMob);
+       
       });
 
       mainCharacter.onCollide("questionBlock", (questionBlock:any) => {
