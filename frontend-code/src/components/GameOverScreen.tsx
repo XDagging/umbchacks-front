@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 interface GameOverScreenProps {
   onRestart: () => void;
@@ -54,7 +54,7 @@ export default function GameOverScreen({ onRestart }: GameOverScreenProps) {
       <div className="absolute inset-0 bg-black animate-fade-to-black pointer-events-none"></div>
 
       {/* Custom animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes menacing-entrance {
           0% {
             opacity: 0;

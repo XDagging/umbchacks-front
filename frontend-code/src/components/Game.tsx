@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 
 import { crew } from "@kaplayjs/crew";
 import kaplay from "kaplay";
@@ -25,7 +25,7 @@ export default function Game({ onGameOver, triggerQuestion, roundIncreaseTrigger
   const currentAnimRef = useRef<string>("idleDown");
   const moneyRef = useRef<any>(null);
   const mainMusic = useRef<any>(null);
-  const roundTextRef = useRef<any>(null);
+  // const roundTextRef = useRef<any>(null);
   
   const [punishRound, setPunishRound] = useState(false);
   const lastRoundTrigger = useRef<number>(-1);

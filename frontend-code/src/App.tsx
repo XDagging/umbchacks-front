@@ -1,6 +1,6 @@
 // src/App.tsx
 import React, { useState } from "react";
-import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { Gamepad2, ReceiptText, X } from "lucide-react";
 import HomeViewComponent from "./views/HomeView"; // Your real working game
 import CreditsView from "./views/CreditsView";

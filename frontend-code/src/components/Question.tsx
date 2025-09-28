@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { Check, ChevronLeft, Phone, Video, X } from "lucide-react";
 

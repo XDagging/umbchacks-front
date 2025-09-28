@@ -1,20 +1,18 @@
 // src/views/HomeView.tsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Game from "../components/Game";
-import Marquee from "react-fast-marquee";
+// import Marquee from "react-fast-marquee";
 
-import PhoneComponent from "../components/PhoneComponent";
+// import PhoneComponent from "../components/PhoneComponent";
 import GameOverScreen from "../components/GameOverScreen";
-import x from "../../public/DDD.gif";
+// import x from "../../public/DDD.gif";
 
-import { Gamepad2, ReceiptText } from "lucide-react";
+// import { Gamepad2, ReceiptText } from "lucide-react";
 import PhoneComponentWithMCQ from "../components/Question";
 
-type HomeViewProps = {
-  onGameOver: () => void;
-}
 
-export default function HomeView(props: HomeViewProps) {
+
+export default function HomeView() {
   const [pausedText, setPausedText] = useState("");
   const [sendQuestion, setSendQuestion] = useState(0);
   const [gameOver, setGameOver] = useState(false);
@@ -47,6 +45,8 @@ export default function HomeView(props: HomeViewProps) {
   const handleRestart = () => {
     // hide game-over, remount the Game component
     setGameOver(false);
+
+    window.location.reload();
     setRunId((r) => r + 1);
   };
 
