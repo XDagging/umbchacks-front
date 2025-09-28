@@ -474,20 +474,17 @@ k.onKeyDown("shift", () => {
 
     // This will position the hearts with a consistent margin
 for (let i = 0; i < 3; i++) {
+    // Determine the starting sprite based on initial health
     const heartSprite = (i + 1 <= playerState.current.health) ? "heart" : "heart-o";
 
-    if (heartSprite === "heart") {  
-          k.add([
+    k.add([
         k.sprite(heartSprite),
-        // Add MARGIN to both X and Y
-        // X: Start at MARGIN, then add 50 for each subsequent heart
-        // Y: Always stay at MARGIN
-        k.pos(MARGIN + (i * 50), MARGIN), 
+        k.pos(MARGIN + (i * 50), MARGIN),
         k.fixed(),
+        k.z(10), // Make sure hearts are on top of other UI
+        "ui-heart"
+        // k.tag("ui-heart"), // Add a tag to identify them later
     ]);
-    }
-    
-  
 }
         k.add([
     k.text(`Money: $${playerState.current.money}`, { size: 24 }),
@@ -534,6 +531,19 @@ const INVINCIBILITY_DURATION = 5; // seconds
         playerState.current.isSpeedBoosted = true;
         playerState.current.speedBoostTimer = 2;
         console.log("Player hit!");
+        const heartObjects = k.get("ui-heart");
+        heartObjects.sort((a, b) => a.pos.x - b.pos.x);
+
+        for (let i = 0; i < heartObjects.length; i++) {
+            const heart = heartObjects[i];
+            // If the heart's index is less than current health, it should be full
+            if (i < playerState.current.health) {
+                heart.use(k.sprite("heart")); // Change to the 'heart' sprite
+            } else {
+                heart.destroy();
+                // heart.use(k.sprite("heart-o")); // Change to the 'heart-o' sprite
+            }
+        }
 
         // Give player temporary invincibility after being hit
         playerState.current.isInvincible = true;
