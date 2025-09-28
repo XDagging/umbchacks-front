@@ -15,6 +15,7 @@ const aka = [
   "Isn't it neat?"
 ];
 let interval: any
+let hasRan = false;
 
 export default function Game() {
     const staminaBarRef = useRef<any>(null);
@@ -105,7 +106,8 @@ export default function Game() {
 
   useEffect(() => {
     if (hasGameStarted.current) return;
-
+    
+    if (hasRan) return
     const k = kaplay({
       plugins: [crew],
       font: "happy",
@@ -116,7 +118,7 @@ export default function Game() {
       
     });
 
-
+    hasRan = true;
     k.scene("main", () => {
         
     const GRID = 64; // cell size
