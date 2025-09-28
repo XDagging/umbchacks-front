@@ -113,7 +113,9 @@ export default function Game({ onGameOver, triggerQuestion, roundIncreaseTrigger
       k.canvas.style.position = "absolute";
       k.canvas.style.top = "0px";
       k.canvas.style.left = "0px";
+      
 
+      k.loadSound("gunSound", "gun.wav");
       // Sounds
       k.loadSound("coinSound", "coin.wav");
       k.loadSound("hurt", "hurt.wav");
@@ -272,6 +274,10 @@ export default function Game({ onGameOver, triggerQuestion, roundIncreaseTrigger
 
       const BULLET_SPEED = 400;
       k.onMousePress(() => {
+
+        k.play("gunSound", {
+          volume: 0.7
+        })
         const dir = k.mousePos().sub(mainCharacter.pos).unit();
 
         k.add([
