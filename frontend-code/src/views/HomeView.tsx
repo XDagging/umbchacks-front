@@ -1,25 +1,17 @@
-<<<<<<< HEAD
-import { useState } from "react";
-import Game from "../components/Game";
-import Marquee from "react-fast-marquee";
-import PhoneComponent from "../components/PhoneComponent";
-import x from "../../public/DDD.gif";
-import PhoneComponentWithMCQ from "../components/Question";
-import y from "../../public/grid.apng";
-import { Gamepad2, ReceiptText } from "lucide-react";
-
-export default function HomeView() {
-  const [hasGameStarted, setHasGameStarted] = useState(false);
-=======
 // src/views/HomeView.tsx
 import React, { useState } from "react";
 import Game from "../components/Game";
 import Marquee from "react-fast-marquee";
 import PhoneComponent from "../components/PhoneComponent";
 import GameOverScreen from "../components/GameOverScreen";
+import x from "../../public/DDD.gif";
+
+import { Gamepad2,ReceiptText } from "lucide-react";
+import PhoneComponentWithMCQ from "../components/Question";
+
 
 export default function HomeView() {
-  const [hasGameStarted, setHasGameStarted] = useState(true);
+  const [hasGameStarted, setHasGameStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [runId, setRunId] = useState(0); // forces Game remount on restart
 
@@ -33,7 +25,6 @@ export default function HomeView() {
   if (gameOver) {
     return <GameOverScreen onRestart={handleRestart} />;
   }
->>>>>>> 8c2789a (dino end game)
 
   return (
     <section className="w-screen h-screen">
