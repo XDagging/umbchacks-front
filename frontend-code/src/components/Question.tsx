@@ -69,7 +69,7 @@ export default function PhoneComponentWithMCQ(props: PhoneProps) {
         body: JSON.stringify({ prompt }),
       });
       const data = await response.json();
-      const parsed = JSON.parse(data.result);
+      const parsed = data.result
       console.log('parsed',parsed);
       setMcqData({
         question: parsed.question,
