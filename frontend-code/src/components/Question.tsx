@@ -23,7 +23,7 @@ type PhoneProps = {
   onAnswered?: (correct: boolean) => void;
 };
 
-let firstRun: boolean = true;
+// let firstRun: boolean = true;
 
 export default function PhoneComponentWithMCQ(props: PhoneProps) {
   const [mcqData, setMcqData] = useState<MCQData | null>(null);

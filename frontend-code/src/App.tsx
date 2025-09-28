@@ -101,7 +101,7 @@ const EnhancedHomeView: React.FC = () => {
   // -------------------------
   return (
     <div className="w-screen h-screen">
-      <HomeViewComponent onGameOver={() => setGameOver(true)} />
+      <HomeViewComponent />
     </div>
   );
 };
