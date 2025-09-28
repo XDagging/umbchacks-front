@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 @import "tailwindcss";
 @plugin "daisyui";
@@ -31,4 +30,9 @@ html, body, #root {
 /* Ensure the canvas element also fills its container */
 canvas {
   display: block;
+}
+
+/* Add this new rule at the bottom */
+.text-white kbd.purple-kbd {
+  color: #8b5cf6 !important;
 }
