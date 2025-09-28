@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { Check, ChevronLeft, Phone, Video, X } from "lucide-react";
 
@@ -30,17 +30,27 @@ export default function PhoneComponentWithMCQ(props: PhoneProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState<boolean>(false);
-
+  const isInitialMount = useRef(true);
   useEffect(() => {
-    // This effect runs when the component mounts and whenever props.x changes.
-    // It's designed to fetch a new question for each new round signaled by the parent.
-    if (!firstRun) {
-      handleGenerate();
+    // 2. Check if it's the initial mount. If so, skip the effect and update the ref.
+
+    if (isInitialMount.current) {
+      console.log("initial x", props.x)
+      isInitialMount.current = false;
+    } else {
+      // 3. On all 
+      // subsequent runs (caused by props.x changing), call the function.
+
+      if (props.x!==0) {
+        console.log("handleGenerate was run because props.x changed.",props.x );
+        handleGenerate();
+      }
+  
     }
-    firstRun = false;
   }, [props.x]);
 
   async function handleGenerate() {
+    console.log("this is being called")
     setLoading(true);
     setSelectedOption(null);
     setIsAnswered(false);
@@ -75,8 +85,17 @@ export default function PhoneComponentWithMCQ(props: PhoneProps) {
   }
 
   const handleOptionClick = (option: MCQOption) => {
+
+    
     if (isAnswered) return; // Prevent changing the answer
     setSelectedOption(option.id);
+
+    if (Number(option.id) === mcqData?.answer) {
+        props.setPausedText("Success. You're 100% right.");
+
+    } else {
+      props.setPausedText(`Not so fast... The correct answer was "${mcqData?.options[mcqData.answer-1]}"`);
+    }
     setIsAnswered(true); // Lock the answer and reveal correctness
   };
 
@@ -160,27 +179,27 @@ export default function PhoneComponentWithMCQ(props: PhoneProps) {
               </div>
 
               {/* Continue Button */}
-              {isAnswered && (
-                <div className="mt-8">
-                  <button
-                    onClick={() => {
-                        const correct = Number(selectedOption) === mcqData.answer;
-                        if (correct) {
-                          props.setPausedText("Success. You're 100% right.");
-                        } else {
-                          const correctAnswerText = mcqData.options[mcqData.answer - 1]?.text;
-                          props.setPausedText(`Not so fast... The correct answer was "${correctAnswerText}"`);
-                        }
-                        props.setAnswered(true); // Signal to parent that round is over
-                        // report correctness to parent if provided
-                        if (props.onAnswered) props.onAnswered(correct);
-                      }}
-                    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl transition-colors duration-200"
-                  >
-                    Continue
-                  </button>
-                </div>
-              )}
+              {/* {isAnswered && (
+                // <div className="mt-8">
+                //   <button
+                //     onClick={() => {
+                //         const correct = Number(selectedOption) === mcqData.answer;
+                //         if (correct) {
+                //           props.setPausedText("Success. You're 100% right.");
+                //         } else {
+                //           const correctAnswerText = mcqData.options[mcqData.answer - 1]?.text;
+                //           props.setPausedText(`Not so fast... The correct answer was "${correctAnswerText}"`);
+                //         }
+                //         props.setAnswered(true); // Signal to parent that round is over
+                //         // report correctness to parent if provided
+                //         if (props.onAnswered) props.onAnswered(correct);
+                //       }}
+                //     className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl transition-colors duration-200"
+                //   >
+                //     Continue
+                //   </button>
+                // </div>
+              )} */}
             </>
           )}
         </div>

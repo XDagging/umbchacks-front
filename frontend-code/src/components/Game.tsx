@@ -452,7 +452,11 @@ k.add([
   mainCharacter.onCollide("questionBlock", (_person: any) => {
         console.log("we got a question ladies")
         k.go("pause");
-        triggerQuestion();
+        
+        if (k.getSceneName()==="pause") {
+          triggerQuestion();
+        }
+      
 
       
  
