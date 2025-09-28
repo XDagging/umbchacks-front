@@ -12,6 +12,8 @@ import PhoneComponentWithMCQ from "../components/Question";
 
 export default function HomeView() {
   const [hasGameStarted, setHasGameStarted] = useState(false);
+  const [gameText, setGameText] = useState("");
+  const [sendQuestion, setSendQuestion] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [runId, setRunId] = useState(0); // forces Game remount on restart
 
@@ -62,11 +64,13 @@ export default function HomeView() {
         <div className="grid grid-cols-6 items-start justify-start w-screen h-full">
           <div className="col-span-4 w-full h-full">
             {/* Pass onGameOver; key forces a fresh Kaplay instance on restart */}
-            <Game key={runId} onGameOver={() => setGameOver(true)} />
+            <Game triggerQuestion={() => {
+              setSendQuestion((prev) => prev+1);
+            }} key={runId} onGameOver={() => setGameOver(true)} />
           </div>
 
           <div className="col-span-2 w-full h-full relative">
-            <PhoneComponentWithMCQ />
+            <PhoneComponentWithMCQ x={sendQuestion} />
           </div>
         </div>
       )}

@@ -5,6 +5,7 @@ import kaplay from "kaplay";
 
 type GameProps = {
   onGameOver: () => void;
+  triggerQuestion: () => void;
 };
 
 const aka = [
@@ -15,7 +16,7 @@ const aka = [
 ];
 
 let hasRan = false;
-export default function Game({ onGameOver }: GameProps) {
+export default function Game({ onGameOver, triggerQuestion }: GameProps) {
   const staminaBarRef = useRef<any>(null);
   const hasGameStarted = useRef<any>(null);
   const mainMusic = useRef<any>(null);
@@ -29,7 +30,7 @@ export default function Game({ onGameOver }: GameProps) {
     stamina: 5000,
     runningSpeed: 1.0,
     health: 3,
-    money: 3,
+    money: 0,
     isSpeedBoosted: false,
     speedBoostTimer: 0,
     isInvincible: false,
@@ -41,17 +42,20 @@ export default function Game({ onGameOver }: GameProps) {
 
   // Typewriter effect
   useEffect(() => {
+    if (dialogueState < 0 || dialogueState >= aka.length) {
+  return;
+}
     if (dialogueState < aka.length) {
       const fullDialogue = aka[dialogueState];
       setDialogue("");
       let currentIndex = 0;
       const typingSpeed = 50;
       const intervalId = setInterval(() => {
-        if (currentIndex >= fullDialogue.length - 1) {
+        if (currentIndex >= fullDialogue?.length - 1) {
           clearInterval(intervalId);
           return;
         }
-        setDialogue((prev) => prev + fullDialogue[currentIndex]);
+        setDialogue((prev) => prev + fullDialogue[currentIndex] || "");
         currentIndex++;
       }, typingSpeed);
       return () => clearInterval(intervalId);
@@ -74,6 +78,7 @@ export default function Game({ onGameOver }: GameProps) {
     if (hasGameStarted.current) return;
     
     if (hasRan) return
+    console.log("this ran multiple times")
     const k = kaplay({
       plugins: [crew],
       font: "happy",
@@ -83,14 +88,19 @@ export default function Game({ onGameOver }: GameProps) {
       height: window.innerHeight,
     });
 
-    // Keep a reference to destroy later on unmount
-    hasGameStarted.current = k;
+
+    hasRan = true;
+    
+
+    k.scene("game", () => {
+       hasGameStarted.current = k;
 
     k.canvas.style.position = "absolute";
     k.canvas.style.top = "0px";
     k.canvas.style.left = "0px";
 
     // Sounds
+    k.loadSound("coinSound", "coin.wav")
     k.loadSound("hurt", "hurt.wav");
     k.loadSound("soundtrack", "soundtrack.mp3");
     if (!mainMusic.current) {
@@ -98,6 +108,22 @@ export default function Game({ onGameOver }: GameProps) {
     }
 
     // Assets
+    k.loadSprite("questionBlock", "questionBlock.png")
+    k.loadSprite("coin", "coin.png", {
+      
+      sliceX: 4,
+      sliceY: 1,
+      anims: {
+        move: {
+          from:0,
+          to: 3,
+          speed:20,
+          loop:true
+        }
+      }
+    })
+  
+
     k.loadCrew("sprite", "heart-o");
     k.loadCrew("sprite", "heart");
     k.loadCrew("sprite", "apple");
@@ -176,10 +202,29 @@ export default function Game({ onGameOver }: GameProps) {
     // Grass tiles
     for (let y = innerY; y < innerY + innerH; y += GRID) {
       for (let x = innerX; x < innerX + innerW; x += GRID) {
+
+        if (0.02>Math.random()) {
+          k.add([
+            k.sprite("coin"), k.pos(x,y), k.z(1), k.scale(GRID/64), "coin",
+            k.area()
+          ])
+        }
+
+        if (0.1>Math.random()) {
+          
+          k.add([
+            k.sprite("questionBlock"), k.pos(x,y), k.z(1), k.scale(GRID/128), "questionBlock", k.area()
+          ])
+        }
         k.add([k.sprite("grass"), k.pos(x, y), k.z(0), k.scale(GRID / 18)]);
       }
     }
 
+
+  
+
+
+  
     // Dialogue bar
     k.add([
       k.rect(k.width() - MARGIN * 2, BAR_HEIGHT),
@@ -198,6 +243,8 @@ export default function Game({ onGameOver }: GameProps) {
       k.z(2),
     ]);
     dialogueTextRef.current = textObj;
+
+    
 
     // World borders with outline
     const borderColor = k.color(160, 160, 160);
@@ -224,9 +271,27 @@ export default function Game({ onGameOver }: GameProps) {
       k.z(1),
     ]);
 
+    mainCharacter.onCollide("coin", (hey) => {
+      console.log("this was triggered")
+      k.play("coinSound", {
+        volume: 1 
+      })
+      playerState.current.money += 1;
+      hey.destroy();
+    })
+    mainCharacter.onCollide("questionBlock", (person: any) => {
+        console.log("we got a question ladies")
+        triggerQuestion();
+
+      
+ 
+    })
     // Input + stamina
     const STAMINA_REGEN_DELAY = 2000;
     let staminaRegenTimer = 0;
+
+
+    
 
     k.onKeyDown("shift", () => {
       staminaRegenTimer = 0;
@@ -252,6 +317,7 @@ export default function Game({ onGameOver }: GameProps) {
           playerState.current.opacity = 1.0;
         }
       }
+      
 
       let currentSpeedMultiplier = 1.0;
       if (isSprinting && playerState.current.stamina > 0) currentSpeedMultiplier = 2.0;
@@ -370,6 +436,24 @@ export default function Game({ onGameOver }: GameProps) {
       clampCamToWorld(mainCharacter.pos.x, mainCharacter.pos.y);
     });
 
+
+    })
+
+    k.scene("pause", () => {
+      // This pauses the game. 
+
+
+
+
+
+    })
+
+    k.go("game");
+
+
+    
+    // Keep a reference to destroy later on unmount
+   
     // Cleanup on unmount
     return () => {
       try {

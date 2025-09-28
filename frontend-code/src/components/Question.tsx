@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Check, ChevronLeft, Phone, Video } from "lucide-react";
 
 interface MCQOption {
@@ -12,18 +12,44 @@ interface MCQData {
   answer?: number;
 }
 
-export default function PhoneComponentWithMCQ() {
+const endpoint = "https://localhost"
+
+type PhoneProps = {
+  x: number
+}
+// let interval: any;
+let firstRun: boolean = true;
+export default function PhoneComponentWithMCQ(props: PhoneProps) {
   const [mcqData, setMcqData] = useState<MCQData | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
+  const defaultTimerAmt = 25000;
+
+  // const [questionTimer, setQuestionTimer] = useState<number>(Date.now());
+ useEffect(() => {
+      // this would change whenever there is a new person
+
+
+      if (!firstRun&&mcqData===null&&!loading) {
+        console.log("we r generating chat")
+        handleGenerate();
+      }
+
+      firstRun = false;
+    }, [props.x])
+
 
   async function handleGenerate() {
+
+
     setLoading(true);
     setSelectedOption(null);
 
     const prompt = 'Generate one multiple-choice financial question. Topics: Personal Finance, Corporate Finance, Investment Strategies, Financial Markets, Banking & Financial Institutions, Insurance & Risk Management, Macroeconomics & Finance, Behavioral Finance, Global Trade & Finance, Sustainable Finance, Payments & Banking Tech, Bitcoin & Altcoins, Decentralized Finance (DeFi), Crypto Regulation.   Requirements:   Question length: ≤150 characters.   Each answer length: ≤60 characters.   Exactly 4 answers in the "choices" array.   The correct answer must be placed at a random index (1–4).   The "answer" field must be the number 1, 2, 3, or 4 (not the text).   Return ONLY valid JSON in this format, with no extra text:   {  "question": "the question",  "choices": ["answer 1", "answer 2", "answer 3", "answer 4"],  "answer": 1}';
 
-    const response = await fetch("/api/gemini", {
+    const response = await fetch(endpoint+"/api/gemini", {
+
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ prompt }),
@@ -31,7 +57,9 @@ export default function PhoneComponentWithMCQ() {
     const data = await response.json();
 
     try {
-      const parsed = JSON.parse(data.result);
+      const parsed = data.result
+
+      console.log("this is the parsed data")
       setMcqData({
         question: parsed.question,
         options: parsed.choices.map((choice: string, idx: number) => ({
@@ -66,16 +94,24 @@ export default function PhoneComponentWithMCQ() {
 
         {/* Content */}
         <div className="h-full overflow-y-auto p-6">
+
+          
           {!mcqData ? (
-            <div className="flex flex-col items-center justify-center h-full gap-4">
-              <button
-                onClick={handleGenerate}
-                disabled={loading}
-                className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold"
-              >
-                {loading ? "Generating..." : "Generate Question"}
-              </button>
-            </div>
+            <>
+            
+              <h2 className="font-1 font-bold">Waiting...</h2>
+              {/* <h1 className="font-1 text-3xl text-center animate-bounce text-error">Ring Ring</h1> */}
+            
+            </>
+            // <div className="flex flex-col items-center justify-center h-full gap-4">
+            //   <button
+            //     onClick={handleGenerate}
+            //     disabled={loading}
+            //     className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold"
+            //   >
+            //     {loading ? "Generating..." : "Generate Question"}
+            //   </button>
+            // </div>
           ) : (
             <>
               {/* Question */}
@@ -120,7 +156,13 @@ export default function PhoneComponentWithMCQ() {
               {/* Continue */}
               {selectedOption && (
                 <div className="mt-8">
-                  <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl transition-colors duration-200">
+                  <button onClick={() => {
+                    if (Number(selectedOption) === mcqData.answer) {
+                      
+                    } else {
+                      // Remove a life
+                    }
+                  }} className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl transition-colors duration-200">
                     Continue
                   </button>
                 </div>
