@@ -8,13 +8,80 @@ import { HeartCrack } from "lucide-react";
 
 
 
-
+const aka = [
+  "Hello, welcome to the demonstration.",
+  "This is a typewriter effect in React.",
+  "It reveals text one character at a time.",
+  "Isn't it neat?"
+];
+let interval: any
 export default function Game() {
+    const staminaBarRef = useRef<any>(null);
   const hasGameStarted = useRef<any>(null);
+  const [dialogueState, setDialogueState] = useState(-1);
+  const dialogueTextRef = useRef<any>(null);
 
-
+  const allEnemies = useRef<any[]>([]);
+  const playerState = useRef({
+    xCoord: 0,
+    yCoord: 0,
+    stamina: 5000,
+    runningSpeed: 1.0,
+  })
+  
   const [dialogue, setDialogue] = useState("");
 
+        // The text currently displayed on screen
+
+  useEffect(() => {
+    // Make sure there's a dialogue to display
+    if (dialogueState < aka.length) {
+        console.log(dialogueState)
+      const fullDialogue = aka[dialogueState];
+      // Reset the displayed dialogue to start typing from scratch
+      setDialogue(''); 
+
+      let currentIndex = 0;
+      const typingSpeed = 50; // Milliseconds between each character
+
+      // Set up an interval to add one character at a time
+      const intervalId = setInterval(() => {
+        // If we've typed out the whole string, stop the interval
+        if (currentIndex >= fullDialogue.length-1) {
+          clearInterval(intervalId);
+          return;
+        }
+
+        // Use the functional form of setState to get the most recent state
+        setDialogue(prevDialogue => prevDialogue + fullDialogue[currentIndex]);
+        currentIndex++;
+      }, typingSpeed);
+
+      // This is the cleanup function.
+      // It runs when the component unmounts or when the effect re-runs.
+      return () => {
+        clearInterval(intervalId);
+      };
+    }
+    // The effect depends on the current dialogue line (dialogueState)
+    // and the source array itself (aka).
+  }, [dialogueState, aka]); 
+
+  useEffect(() => {
+    // 3. If our Kaboom text object exists...
+    if (dialogueTextRef.current) {
+      // 4. ...update its .text property with the new dialogue string.
+      dialogueTextRef.current.text = dialogue;
+    }
+  }, [dialogue]);
+
+  // A button to advance to the next line of dialogue
+  const handleNext = () => {
+    if (dialogueState < aka.length - 1) {
+        console.log("this was clicked")
+      setDialogueState(prevState => prevState + 1);
+    }
+  };
 
   const [playerStats, setPlayerStats] = useState({
     age: 0,
@@ -51,7 +118,7 @@ export default function Game() {
     k.loadCrew("sprite", "apple");
     k.loadCrew("sprite", "grape", "purplefruit");
     k.loadCrew("font", "happy");
-
+    k.loadSprite("volatility", "volatility.png");
     k.loadSprite("grass", "grass.png")
 
     // ----- HUD (fixed to screen space) -----
@@ -144,12 +211,46 @@ k.add([
     for (let y = innerY + GRID; y < innerY + innerH; y += GRID) {
       k.add([
         k.rect(innerW, 1),
-        k.pos(innerX, Math.floor(y)),
+        k.pos(innerW, Math.floor(y)),
         k.color(70, 90, 110),
         // k.opacity(0.25),
       ]);
     }
 
+
+    console.log(`DEBUG: Screen Width is ${k.width()}, MARGIN is ${MARGIN}`);
+const STAMINA_BAR_WIDTH = 200;
+const STAMINA_BAR_HEIGHT = 40;
+const staminaBarX = k.width() - MARGIN;
+const staminaBarY = MARGIN;
+
+// The Parent: This object is responsible for screen positioning.
+const staminaGroup = k.add([
+    // Position the parent's top-right corner in the screen's top-right corner.
+    k.pos(staminaBarX, staminaBarY),
+    k.anchor("topright"), 
+    k.fixed(),
+     k.outline(4, { r: 0, g: 0, b: 0 }),
+    k.z(2),
+]);
+
+// The Child (Stamina Bar Background): Position it relative to the parent.
+
+staminaBarRef.current = staminaGroup.add([ // <-- Assign the result here
+    k.rect(STAMINA_BAR_WIDTH, STAMINA_BAR_HEIGHT),
+    k.pos(0, 0),
+    k.color(0, 255, 0),
+    k.anchor("topright"), // Black outline for visibility
+]);
+
+// The Child (Stamina Text): Also positioned relative to the parent.
+staminaGroup.add([
+    k.text("Stamina", { size: 24 }),
+    // Position it in the center of the bar.
+    k.pos(-STAMINA_BAR_WIDTH / 2, STAMINA_BAR_HEIGHT / 2), 
+    k.anchor("center"), // Use a center anchor for easy alignment.
+    k.color(0, 0, 0), // Black text for visibility
+]);
 
     // Adding tiles
 
@@ -173,14 +274,22 @@ k.add([
       k.color(50, 50, 50),
       k.z(2),
     ]);
+    if (dialogueState ===-1) {
+        handleNext();
+    }
 
-    k.add([
-      k.text("Age: 18", { size: 24 }),
+
+    
+    
+    const textObj = k.add([
+      k.text("", { size: 24 }),
       k.pos(MARGIN + 20, k.height() - BAR_HEIGHT - MARGIN + 20),
       k.color(255, 255, 255),
       k.fixed(),
       k.z(2),
     ]);
+
+    dialogueTextRef.current = textObj;
 
 
     // ----- WORLD BORDERS WITH OUTLINE -----
@@ -214,6 +323,29 @@ k.add([
     const SPEED = 200;
     const PLAYER_RADIUS = 16;
 
+const MAX_STAMINA = 5000;
+
+k.onUpdate(() => {
+    // Make sure the stamina bar object exists before trying to update it
+    if (staminaBarRef.current) {
+        // Calculate the percentage of stamina remaining (a value between 0 and 1)
+        const staminaPercentage = playerState.current.stamina / MAX_STAMINA;
+
+        // Calculate the new width of the bar
+        const newWidth = STAMINA_BAR_WIDTH * staminaPercentage;
+
+        // Update the 'width' property of the stamina bar rectangle
+        staminaBarRef.current.width = newWidth;
+    }
+
+    // You can also add the logic to decrease stamina here
+    // For example, when the player is running:
+    if (playerState.current.runningSpeed > 1 && playerState.current.stamina > 0) {
+        playerState.current.stamina -= 5; // Decrease stamina by 5 every frame
+    }
+});
+
+    
     const mainCharacter = k.add([
       k.sprite("apple"),
       k.area(),
@@ -221,44 +353,121 @@ k.add([
       k.anchor("center"),
       k.z(1)
     ]);
+    const STAMINA_REGEN_DELAY = 2000; // 2 seconds in milliseconds
+let staminaRegenTimer = 0; // Timer to track regen delay
+
+// Use simple key state checks instead of intervals
+k.onKeyDown("shift", () => {
+    // When shift is pressed, reset the regen timer
+    staminaRegenTimer = 0;
+});
 
     // Input
-    k.onKeyDown("w", () => mainCharacter.move(0, -SPEED));
-    k.onKeyDown("a", () => mainCharacter.move(-SPEED, 0));
-    k.onKeyDown("s", () => mainCharacter.move(0, SPEED));
-    k.onKeyDown("d", () => mainCharacter.move(SPEED, 0));
+    k.onKeyDown("w", () => mainCharacter.move(0, -SPEED*playerState.current.runningSpeed));
+    k.onKeyDown("a", () => mainCharacter.move(-SPEED*playerState.current.runningSpeed, 0));
+    k.onKeyDown("s", () => mainCharacter.move(0, SPEED*playerState.current.runningSpeed));
+    k.onKeyDown("d", () => mainCharacter.move(SPEED*playerState.current.runningSpeed, 0));
+    k.onUpdate(() => {
+    const isSprinting = k.isKeyDown("shift");
 
+    // --- Stamina Logic ---
+    if (isSprinting && playerState.current.stamina > 0) {
+        // 1. Sprinting: Drain stamina and increase speed
+        playerState.current.stamina -= 5; // Drain 5 per frame
+        playerState.current.runningSpeed = 2.0;
+
+    } else {
+        // 2. Not Sprinting: Regenerate stamina
+        playerState.current.runningSpeed = 1.0;
+
+        // Check if the 2-second delay has passed
+        if (staminaRegenTimer < STAMINA_REGEN_DELAY) {
+            staminaRegenTimer += k.dt() * 1000; // k.dt() is delta time in seconds
+        } else {
+            // Delay has passed, start regenerating
+            if (playerState.current.stamina < MAX_STAMINA) {
+                playerState.current.stamina += 2; // Regenerate 2 per frame
+            }
+        }
+    }
+
+    // Clamp stamina to ensure it doesn't go below 0 or above MAX
+    playerState.current.stamina = k.clamp(playerState.current.stamina, 0, MAX_STAMINA);
+    
+    // --- Visual Bar Update Logic (from before) ---
+    if (staminaBarRef.current) {
+        const staminaPercentage = playerState.current.stamina / MAX_STAMINA;
+        staminaBarRef.current.width = STAMINA_BAR_WIDTH * staminaPercentage;
+    }
+});
+
+    k.onKeyPress("space", () => {
+        handleNext();
+    })
 
     // Hud stats
 
-    for (let i=0; i < 3; i++) {
+    // This will position the hearts with a consistent margin
+for (let i = 0; i < 3; i++) {
+    const heartSprite = (i + 1 <= playerStats.health) ? "heart" : "heart-o";
+    
+    k.add([
+        k.sprite(heartSprite),
+        // Add MARGIN to both X and Y
+        // X: Start at MARGIN, then add 50 for each subsequent heart
+        // Y: Always stay at MARGIN
+        k.pos(MARGIN + (i * 50), MARGIN), 
+        k.fixed(),
+    ]);
+}
+        k.add([
+    k.text(`Money: $${playerStats.money}`, { size: 24 }),
+    // X: Start at the left MARGIN
+    // Y: Start at the top MARGIN, plus extra space (e.g., 50px) to be below the hearts
+    k.pos(MARGIN, MARGIN + 50), 
+    k.fixed(),
+]);
 
-        if (i+1 <= playerStats.health) {
-             k.add([
-                k.sprite("heart"),
-            k.pos(i*50,0),
-            k.fixed(),
-        ])
-        } else {
-            k.add([
-                k.sprite("heart-o"),
-            k.pos(i*50,0),
-            k.fixed(),
-        ])
-        }
-       
+    for (let i=0; i<5; i++) {
+        const myGroup = k.add([
+  k.pos(0,0),// The position of the parent object
+]);
+         const newEnemy = myGroup.add([
+        k.sprite("volatility"),
+        
+        k.z(1),
+        k.scale(0.3),
+    ])
+
+        const text = myGroup.add([
+      k.text("Volatility", { size: 8 }),
+    //   k.color("red"),
+      k.pos(0, 30), // Centered horizontally, offset below the sprite
+      k.anchor("center"),
+      k.color(255, 255, 255),
+    ]);
+
+    allEnemies.current = [...allEnemies.current, myGroup];
+
+    for (const enemy of allEnemies.current) {   
+
+        enemy.onUpdate(() => {
+            
+            const dir = k.vec2(mainCharacter.pos).sub(enemy.pos).unit();
+
+            
+            enemy.move(dir.scale(25));
+
+            
+        })
     }
 
+    }
    
 
     
 
-    k.add([
-        k.text(`Money: $${playerStats.money}`, { size: 24 }),
-        k.pos(0,40),
-        k.fixed(),
-        
-    ])
+
 
     // ----- CAMERA FOLLOW (centered unless hitting world edges) -----
     function clampCamToWorld(px: number, py: number) {
