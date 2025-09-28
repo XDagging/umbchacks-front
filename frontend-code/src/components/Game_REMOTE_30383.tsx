@@ -13,11 +13,6 @@ const aka = [
   "It reveals text one character at a time.",
   "Isn't it neat?",
 ];
-<<<<<<< HEAD
-let interval: any
-let hasRan = false;
-=======
->>>>>>> 8c2789a (dino end game)
 
 export default function Game({ onGameOver }: GameProps) {
   const staminaBarRef = useRef<any>(null);
@@ -76,8 +71,7 @@ export default function Game({ onGameOver }: GameProps) {
 
   useEffect(() => {
     if (hasGameStarted.current) return;
-    
-    if (hasRan) return
+
     const k = kaplay({
       plugins: [crew],
       font: "happy",
@@ -87,19 +81,7 @@ export default function Game({ onGameOver }: GameProps) {
       height: window.innerHeight,
     });
 
-<<<<<<< HEAD
-    hasRan = true;
-    k.scene("main", () => {
-        
-    const GRID = 64; // cell size
- 
-
-
-
-    
-=======
     // Keep a reference to destroy later on unmount
->>>>>>> 8c2789a (dino end game)
     hasGameStarted.current = k;
 
     k.canvas.style.position = "absolute";
@@ -386,24 +368,7 @@ export default function Game({ onGameOver }: GameProps) {
       clampCamToWorld(mainCharacter.pos.x, mainCharacter.pos.y);
     });
 
-<<<<<<< HEAD
-    })
-
-    k.scene("gameover", () => {
-        k.text("Game Over", {size: 24})
-
-        k.text("Restart to play again")
-
-
-    })
-
-    k.go("main");
-
-
-
-=======
     // Cleanup on unmount
->>>>>>> 8c2789a (dino end game)
     return () => {
       try {
         if (mainMusic.current) {

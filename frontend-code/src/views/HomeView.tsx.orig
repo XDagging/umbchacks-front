@@ -4,7 +4,6 @@ import Game from "../components/Game";
 import Marquee from "react-fast-marquee";
 import PhoneComponent from "../components/PhoneComponent";
 import x from "../../public/DDD.gif";
-import PhoneComponentWithMCQ from "../components/Question";
 import y from "../../public/grid.apng";
 import { Gamepad2, ReceiptText } from "lucide-react";
 
@@ -75,7 +74,7 @@ export default function HomeView() {
           </div>
 
           <div className="col-span-2 w-full h-full relative">
-            <PhoneComponentWithMCQ />
+            <PhoneComponent />
           </div>
         </div>
       )}
