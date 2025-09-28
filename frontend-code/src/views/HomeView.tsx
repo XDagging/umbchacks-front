@@ -12,8 +12,7 @@ import PhoneComponentWithMCQ from "../components/Question";
 
 type HomeViewProps = {
   onGameOver: () => void;
-}
-
+};
 
 export default function HomeView(props: HomeViewProps) {
   const [hasGameStarted, setHasGameStarted] = useState(false);
@@ -37,7 +36,11 @@ export default function HomeView(props: HomeViewProps) {
     <section className="w-screen h-screen">
       {!hasGameStarted ? (
         <section className="w-full h-full bg-[url('/grid.apng')] bg-cover aspect-auto">
-          <Marquee className="flex items-center justiy-between py-2 text-lg">
+          <Marquee
+            className="relative z-10 flex items-center justify-between py-2 text-lg"
+            gradient={false}
+            pauseOnHover={false}
+          >
             <p className="font-1 mr-16">You're probably broke</p>
             <p className="font-1 mr-16">
               Let me guess, you blew your money on something stupid again?
@@ -75,7 +78,7 @@ export default function HomeView(props: HomeViewProps) {
           <div className="col-span-4 w-full h-full">
             {/* Pass onGameOver; key forces a fresh Kaplay instance on restart */}
             <Game
-            pausedText={pausedText}
+              pausedText={pausedText}
               triggerQuestion={() => {
                 setSendQuestion((prev) => prev + 1);
               }}
@@ -85,7 +88,10 @@ export default function HomeView(props: HomeViewProps) {
           </div>
 
           <div className="col-span-2 w-full h-full relative">
-            <PhoneComponentWithMCQ setPausedText={setPausedText} x={sendQuestion} />
+            <PhoneComponentWithMCQ
+              setPausedText={setPausedText}
+              x={sendQuestion}
+            />
           </div>
         </div>
       )}
