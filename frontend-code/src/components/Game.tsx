@@ -27,6 +27,15 @@ export default function Game() {
     yCoord: 0,
     stamina: 5000,
     runningSpeed: 1.0,
+    health: 3,
+    money: 3,
+
+
+      isSpeedBoosted: false,
+        speedBoostTimer: 0,
+        isInvincible: false,
+        opacity: 1,
+        invincibilityTimer: 0,
   })
   
   const [dialogue, setDialogue] = useState("");
@@ -83,12 +92,12 @@ export default function Game() {
     }
   };
 
-  const [playerStats, setPlayerStats] = useState({
-    age: 0,
-    health: 2,
-    money: 0,
-    description: "A new player",
-  });
+//   const [playerStats, setPlayerStats] = useState({
+//     age: 0,
+//     health: 2,
+//     money: 0,
+//     description: "A new player",
+//   });
 
   
 
@@ -225,33 +234,44 @@ const staminaBarX = k.width() - MARGIN;
 const staminaBarY = MARGIN;
 
 // The Parent: This object is responsible for screen positioning.
+const BORDER_THICKNESS = 4; // How thick the border should be
+
+// The Parent: This object is responsible for screen positioning.
 const staminaGroup = k.add([
-    // Position the parent's top-right corner in the screen's top-right corner.
     k.pos(staminaBarX, staminaBarY),
     k.anchor("topright"), 
     k.fixed(),
-     k.outline(4, { r: 0, g: 0, b: 0 }),
     k.z(2),
 ]);
 
-// The Child (Stamina Bar Background): Position it relative to the parent.
-
-staminaBarRef.current = staminaGroup.add([ // <-- Assign the result here
+// 1. The Child (Border/Background): Drawn first, so it's in the back.
+staminaGroup.add([
     k.rect(STAMINA_BAR_WIDTH, STAMINA_BAR_HEIGHT),
     k.pos(0, 0),
-    k.color(0, 255, 0),
-    k.anchor("topright"), // Black outline for visibility
+    k.color(0, 0, 0), // Black color for the border
+    k.anchor("topright"),
 ]);
 
-// The Child (Stamina Text): Also positioned relative to the parent.
+// 2. The Child (Stamina Fill): Drawn on top of the background.
+//    It's smaller and inset to create the border effect.
+const innerBarMaxWidth = STAMINA_BAR_WIDTH - (BORDER_THICKNESS * 2);
+const innerBarHeight = STAMINA_BAR_HEIGHT - (BORDER_THICKNESS * 2);
+
+staminaBarRef.current = staminaGroup.add([
+    k.rect(innerBarMaxWidth, innerBarHeight),
+    // Offset from the parent's corner by the border thickness
+    k.pos(-BORDER_THICKNESS, BORDER_THICKNESS), 
+    k.color(0, 255, 0), // Green fill color
+    k.anchor("topright"),
+]);
+
+// 3. The Child (Stamina Text): Drawn on top of everything else.
 staminaGroup.add([
     k.text("Stamina", { size: 24 }),
-    // Position it in the center of the bar.
     k.pos(-STAMINA_BAR_WIDTH / 2, STAMINA_BAR_HEIGHT / 2), 
-    k.anchor("center"), // Use a center anchor for easy alignment.
-    k.color(0, 0, 0), // Black text for visibility
+    k.anchor("center"),
+    k.color(255, 255, 255), // White text for better contrast on a black bg
 ]);
-
     // Adding tiles
 
     for (let y = innerY; y < innerY + innerH; y += GRID) {
@@ -326,6 +346,7 @@ staminaGroup.add([
 const MAX_STAMINA = 5000;
 
 k.onUpdate(() => {
+
     // Make sure the stamina bar object exists before trying to update it
     if (staminaBarRef.current) {
         // Calculate the percentage of stamina remaining (a value between 0 and 1)
@@ -340,7 +361,8 @@ k.onUpdate(() => {
 
     // You can also add the logic to decrease stamina here
     // For example, when the player is running:
-    if (playerState.current.runningSpeed > 1 && playerState.current.stamina > 0) {
+    if (playerState.current.runningSpeed > 1 && playerState.current.stamina > 0 &&playerState.current.isSpeedBoosted!) {
+        console.log("we r here chat")
         playerState.current.stamina -= 5; // Decrease stamina by 5 every frame
     }
 });
@@ -356,6 +378,9 @@ k.onUpdate(() => {
     const STAMINA_REGEN_DELAY = 2000; // 2 seconds in milliseconds
 let staminaRegenTimer = 0; // Timer to track regen delay
 
+
+
+
 // Use simple key state checks instead of intervals
 k.onKeyDown("shift", () => {
     // When shift is pressed, reset the regen timer
@@ -369,14 +394,54 @@ k.onKeyDown("shift", () => {
     k.onKeyDown("d", () => mainCharacter.move(SPEED*playerState.current.runningSpeed, 0));
     k.onUpdate(() => {
     const isSprinting = k.isKeyDown("shift");
+        // console.log("this ran",playerState.current.isSpeedBoosted)
+    
+    // --- BOOST MANAGEMENT ---
+    
+    // 1. Handle Speed Boost
+    if (playerState.current.isSpeedBoosted) {
+        // let x = playerState.current.speedBoostTimer
+        // console.log(k.dt())
+        playerState.current.speedBoostTimer -= k.dt(); // k.dt() is delta time
+        
+        if (playerState.current.speedBoostTimer <= 0) {
+            console.log("we turning ts off")
+            playerState.current.isSpeedBoosted = false;
+        }
+    }
+
+
+    if (playerState.current.isInvincible) {
+        playerState.current.invincibilityTimer -= k.dt();
+        if (playerState.current.invincibilityTimer <= 0) {
+            playerState.current.isInvincible = false;
+            playerState.current.opacity = 1.0; // Reset visual
+        }
+    }
+
+
+     let currentSpeedMultiplier = 1.0;
+    if (isSprinting && playerState.current.stamina > 0) {
+        currentSpeedMultiplier = 2.0;
+    }
+
+     if (playerState.current.isSpeedBoosted) {
+        // console.log("we in this")
+        // Boost adds to the current speed (even when sprinting)
+        currentSpeedMultiplier += 1.5; 
+    }
+    
+    playerState.current.runningSpeed = currentSpeedMultiplier;
+    console.log()
 
     // --- Stamina Logic ---
-    if (isSprinting && playerState.current.stamina > 0) {
+    if (isSprinting && playerState.current.stamina > 0 && playerState.current.isSpeedBoosted!) {
+        console.log("the stamina is being drained here")
         // 1. Sprinting: Drain stamina and increase speed
         playerState.current.stamina -= 5; // Drain 5 per frame
         playerState.current.runningSpeed = 2.0;
 
-    } else {
+    } else if (!playerState.current.isSpeedBoosted) {
         // 2. Not Sprinting: Regenerate stamina
         playerState.current.runningSpeed = 1.0;
 
@@ -393,7 +458,7 @@ k.onKeyDown("shift", () => {
 
     // Clamp stamina to ensure it doesn't go below 0 or above MAX
     playerState.current.stamina = k.clamp(playerState.current.stamina, 0, MAX_STAMINA);
-    
+  
     // --- Visual Bar Update Logic (from before) ---
     if (staminaBarRef.current) {
         const staminaPercentage = playerState.current.stamina / MAX_STAMINA;
@@ -409,9 +474,10 @@ k.onKeyDown("shift", () => {
 
     // This will position the hearts with a consistent margin
 for (let i = 0; i < 3; i++) {
-    const heartSprite = (i + 1 <= playerStats.health) ? "heart" : "heart-o";
-    
-    k.add([
+    const heartSprite = (i + 1 <= playerState.current.health) ? "heart" : "heart-o";
+
+    if (heartSprite === "heart") {  
+          k.add([
         k.sprite(heartSprite),
         // Add MARGIN to both X and Y
         // X: Start at MARGIN, then add 50 for each subsequent heart
@@ -419,24 +485,31 @@ for (let i = 0; i < 3; i++) {
         k.pos(MARGIN + (i * 50), MARGIN), 
         k.fixed(),
     ]);
+    }
+    
+  
 }
         k.add([
-    k.text(`Money: $${playerStats.money}`, { size: 24 }),
+    k.text(`Money: $${playerState.current.money}`, { size: 24 }),
     // X: Start at the left MARGIN
     // Y: Start at the top MARGIN, plus extra space (e.g., 50px) to be below the hearts
     k.pos(MARGIN, MARGIN + 50), 
     k.fixed(),
 ]);
 
+const SPEED_BOOST_DURATION = 5; // seconds
+const INVINCIBILITY_DURATION = 5; // seconds
     for (let i=0; i<5; i++) {
         const myGroup = k.add([
   k.pos(0,0),// The position of the parent object
+  "volatility"
 ]);
          const newEnemy = myGroup.add([
         k.sprite("volatility"),
         
         k.z(1),
         k.scale(0.3),
+
     ])
 
         const text = myGroup.add([
@@ -450,19 +523,40 @@ for (let i = 0; i < 3; i++) {
     allEnemies.current = [...allEnemies.current, myGroup];
 
     for (const enemy of allEnemies.current) {   
-
+        
         enemy.onUpdate(() => {
-            
-            const dir = k.vec2(mainCharacter.pos).sub(enemy.pos).unit();
+    const dir = k.vec2(mainCharacter.pos).sub(enemy.pos).unit();
+    enemy.move(dir.scale(25));
 
-            
-            enemy.move(dir.scale(25));
+    // Check distance and if the player is NOT invincible
+    if (enemy.pos.dist(mainCharacter.pos) < 30 && !playerState.current.isInvincible) {
+        playerState.current.health -= 1;
+        playerState.current.isSpeedBoosted = true;
+        playerState.current.speedBoostTimer = 2;
+        console.log("Player hit!");
 
-            
-        })
+        // Give player temporary invincibility after being hit
+        playerState.current.isInvincible = true;
+        playerState.current.invincibilityTimer = 2; // 2-second grace period
+        playerState.current.opacity = 0.5; // Visual feedback
+
+        // You could also add a small knockback or speed boost here if you want
+    }
+});
     }
 
     }
+
+
+    // mainCharacter.onCollide("volatility", (enemy) => {
+    //     console.log("they just collided")
+
+    
+    //     k.destroy(enemy);
+
+    // })
+
+
    
 
     
