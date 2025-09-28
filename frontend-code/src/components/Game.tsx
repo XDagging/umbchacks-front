@@ -19,6 +19,9 @@ let hasRan = false;
 export default function Game({ onGameOver, triggerQuestion }: GameProps) {
   const staminaBarRef = useRef<any>(null);
   const hasGameStarted = useRef<any>(null);
+
+  const moneyRef = useRef<any>(null);
+
   const mainMusic = useRef<any>(null);
   const [dialogueState, setDialogueState] = useState(-1);
   const dialogueTextRef = useRef<any>(null);
@@ -204,6 +207,7 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
       for (let x = innerX; x < innerX + innerW; x += GRID) {
 
         if (0.02>Math.random()) {
+          
           k.add([
             k.sprite("coin"), k.pos(x,y), k.z(1), k.scale(GRID/64), "coin",
             k.area()
@@ -276,7 +280,33 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
       k.play("coinSound", {
         volume: 1 
       })
+
+
+      // for (let y = innerY; y < innerY + innerH; y += GRID) {
+      // for (let x = innerX; x < innerX + innerW; x += GRID) {
+
+        // if (0.02>Math.random()) {
+        //   k.add([
+        //     k.sprite("coin"), k.pos(x,y), k.z(1), k.scale(GRID/64), "coin",
+        //     k.area()
+        //   ])
+        // }
+
+
+      const totalX = ((innerY + innerH) / Math.ceil(Math.random()*GRID));
+      const totalY = ((innerX + innerW) / Math.ceil(Math.random()*GRID));
+      
+      k.add([
+            k.sprite("coin"), k.pos(totalX,totalY), k.z(1), k.scale(GRID/64), "coin",
+            k.area()
+          ])
+
       playerState.current.money += 1;
+      moneyRef.current.destroy();
+      moneyRef.current = k.add([k.text(`Money: $${playerState.current.money}`, { size: 24 }), k.pos(MARGIN, MARGIN + 50), k.fixed()]);
+      
+
+      
       hey.destroy();
     })
     mainCharacter.onCollide("questionBlock", (person: any) => {
@@ -349,7 +379,7 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
     }
 
     // Money UI
-    k.add([k.text(`Money: $${playerState.current.money}`, { size: 24 }), k.pos(MARGIN, MARGIN + 50), k.fixed()]);
+    moneyRef.current = k.add([k.text(`Money: $${playerState.current.money}`, { size: 24 }), k.pos(MARGIN, MARGIN + 50), k.fixed()]);
 
     // Enemies
     const SPEED_BOOST_DURATION = 5;
@@ -461,7 +491,9 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
           mainMusic.current.stop();
           mainMusic.current = null;
         }
-      } catch {}
+      } catch {
+        
+      }
       try {
         // Destroy Kaplay instance content
         k.destroyAll("");
