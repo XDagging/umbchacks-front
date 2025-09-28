@@ -3,11 +3,23 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+:root {
+  --bg: black;
+  --text: white;
+}
 
+.dark {
+  --bg: black;
+  --text: white;
+}
+  
 .font-1 {
   font-family: 'VT323', monospace;
 }
 html, body, #root {
+  background: var(--bg);
+  color: var(--text);
+  
   margin: 0;
   padding: 0;
   
