@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import type { Dispatch, SetStateAction} from "react";
 import { Check, ChevronLeft, Phone, Video } from "lucide-react";
 
 interface MCQOption {
@@ -16,6 +17,9 @@ const endpoint = "https://localhost"
 
 type PhoneProps = {
   x: number
+  setPausedText: Dispatch<SetStateAction<string>>;
+
+  
 }
 // let interval: any;
 let firstRun: boolean = true;
@@ -158,8 +162,17 @@ export default function PhoneComponentWithMCQ(props: PhoneProps) {
                 <div className="mt-8">
                   <button onClick={() => {
                     if (Number(selectedOption) === mcqData.answer) {
-                      
+                      // They got it right. 
+
+                      props
+
+                      // this should unpause and make the next round go by. 
+
                     } else {
+
+
+                      // It should start the round instantly.
+                      
                       // Remove a life
                     }
                   }} className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl transition-colors duration-200">

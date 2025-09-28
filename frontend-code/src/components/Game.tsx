@@ -6,29 +6,50 @@ import kaplay from "kaplay";
 type GameProps = {
   onGameOver: () => void;
   triggerQuestion: () => void;
+  pausedText: string;
 };
 
 const aka = [
-  "Hello, welcome to the demonstration.",
+  "Hi. Welcome to dino",
   "This is a typewriter effect in React.",
   "It reveals text one character at a time.",
   "Isn't it neat?",
 ];
-
+let timeout: any;
 let hasRan = false;
 export default function Game({ onGameOver, triggerQuestion }: GameProps) {
   const staminaBarRef = useRef<any>(null);
   const hasGameStarted = useRef<any>(null);
-<<<<<<< HEAD
+  const currentAnimRef = useRef<string>("idleDown");
 
   const moneyRef = useRef<any>(null);
   const allProjectiles = useRef<any>([]);
 
-=======
->>>>>>> 63caa14337b8562a4bb788416a2e78b5d7381682
+  const [punishRound, setPunishRound] = useState(false);
+
   const mainMusic = useRef<any>(null);
   const [dialogueState, setDialogueState] = useState(-1);
   const dialogueTextRef = useRef<any>(null);
+
+  
+  useEffect(() => {
+
+    
+    if (punishRound) {
+        timeout = setTimeout(() => {
+          setPunishRound(false);
+        },3000)
+    }
+  
+
+
+    return () => {
+      clearTimeout(timeout);
+
+    }
+
+  },[punishRound])
+
 
   const allEnemies = useRef<any[]>([]);
   const playerState = useRef({
@@ -136,6 +157,58 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
       // singular: true,
       sliceY: 1
     });
+      const COLS = 6;
+      const ROWS = 10;
+      const WALK_FRAMES = 6;
+
+      const idx = (r: number, c: number) => r * COLS + c;
+
+      const RIGHT_ROW = 1;
+      const UP_ROW = 2;
+      const DOWN_ROW = 3;
+
+      k.loadSprite("hero", "hero.png", {
+        sliceX: COLS,
+        sliceY: ROWS,
+        anims: {
+          // use the RIGHT row for both horizontal directions; left will be mirrored with scale.x
+          walkRight: {
+            from: idx(RIGHT_ROW, 0),
+            to: idx(RIGHT_ROW, WALK_FRAMES - 1),
+            speed: 10,
+            loop: true,
+            pingpong: false, // <— important so it cycles 0..5..0 smoothly
+          },
+          // same frames; we only flip the sprite when moving left
+          walkLeft: {
+            from: idx(RIGHT_ROW, 0),
+            to: idx(RIGHT_ROW, WALK_FRAMES - 1),
+            speed: 10,
+            loop: true,
+            pingpong: false,
+          },
+          walkUp: {
+            from: idx(UP_ROW, 0),
+            to: idx(UP_ROW, WALK_FRAMES - 1),
+            speed: 10,
+            loop: true,
+            pingpong: false,
+          },
+          walkDown: {
+            from: idx(DOWN_ROW, 0),
+            to: idx(DOWN_ROW, WALK_FRAMES - 1),
+            speed: 10,
+            loop: true,
+            pingpong: false,
+          },
+
+          // idle frames (pick a neutral column, e.g., last)
+          idleRight: idx(RIGHT_ROW, COLS - 1),
+          idleLeft: idx(RIGHT_ROW, COLS - 1), // same frame; we mirror with scale.x
+          idleUp: idx(UP_ROW, COLS - 1),
+          idleDown: idx(DOWN_ROW, COLS - 1),
+        },
+      });
   
 
     k.loadCrew("sprite", "heart-o");
@@ -223,12 +296,12 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
           // const dir = k.vec2(mainCharacter.pos).sub(enemy.pos).unit();
         if (0.005*playerState.current.round>Math.random()) {
            const myGroup = k.add([ k.pos(x,y), "volatility"]);
-      myGroup.add([k.sprite("volatility"), k.z(1), k.scale(0.3)]);
+          
+      myGroup.add([k.sprite("volatility"), k.z(2), k.scale(0.3)]);
       // myGroup.add([k.text("Debt", { size: 8 }), k.pos(0, 30), k.anchor("center"), k.color(255, 255, 255)]);
       allEnemies.current = [...allEnemies.current, myGroup];
         }
 
-<<<<<<< HEAD
 
         if (0.001*playerState.current.round>Math.random()) {
           const newEnemy = k.add([k.sprite("thrower"), k.z(1), k.scale(2), k.pos(x,y), "thrower", {
@@ -240,20 +313,26 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
 
         if (0.02*(playerState.current.round/2)>Math.random()) {
           
-=======
-        if (0.02>Math.random()) {
->>>>>>> 63caa14337b8562a4bb788416a2e78b5d7381682
           k.add([
             k.sprite("coin"), k.pos(x,y), k.z(1), k.scale(GRID/64), "coin",
             k.area()
           ])
         }
 
-        if (0.1>Math.random()) {
+        if (0.05>Math.random()) {
           
-          k.add([
-            k.sprite("questionBlock"), k.pos(x,y), k.z(1), k.scale(GRID/128), "questionBlock", k.area()
-          ])
+          const visualScale = GRID / 128;
+
+k.add([
+    k.sprite("questionBlock"),
+    k.pos(x,y),
+    k.scale(visualScale),
+    k.z(1),
+    "questionBlock",
+    k.area({ scale: visualScale }) // Now the hitbox scales with the sprite!
+])
+
+         
         }
         k.add([k.sprite("grass"), k.pos(x, y), k.z(0), k.scale(GRID / 18)]);
       }
@@ -302,20 +381,32 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
     const PLAYER_RADIUS = 16;
     const MAX_STAMINA = 5000;
 
-    const mainCharacter = k.add([
-      k.sprite("apple"),
-      k.area(),
-      k.pos(worldX + worldW / 2, worldY + worldH / 2),
-      k.anchor("center"),
-      k.z(1),
-    ]);
+    const playerScale = 4
+     const mainCharacter = k.add([
+        k.sprite("hero", { anim: "idleDown" }),
+        k.area({scale: playerScale/16}),
+        k.pos(worldX + worldW / 2, worldY + worldH / 2),
+        k.anchor("center"),
+        k.scale(4), // <-- ensure scale component exists
+        k.z(1),
+      ]);
+
+       const faceRight = () => {
+        mainCharacter.scale.x = Math.abs(mainCharacter.scale.x || 1);
+      };
+      const faceLeft = () => {
+        mainCharacter.scale.x = -Math.abs(mainCharacter.scale.x || 1);
+      };
+      // default face right
+      faceRight();
+ let lastDir: "up" | "down" | "left" | "right" = "down";
+
 
     mainCharacter.onCollide("coin", (hey) => {
       console.log("this was triggered")
       k.play("coinSound", {
         volume: 1 
       })
-<<<<<<< HEAD
 
 
       const totalX = ((innerY + innerH) / Math.ceil(Math.random()*GRID));
@@ -325,15 +416,17 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
             k.sprite("coin"), k.pos(totalX,totalY), k.z(1), k.scale(GRID/64), "coin",
             k.area()
           ])
-
-=======
->>>>>>> 63caa14337b8562a4bb788416a2e78b5d7381682
+          
       playerState.current.money += 1;
+
+      // moneyRef.current.destroy()
+      moneyRef.current.text = `Money: $${playerState.current.money}`
+
       hey.destroy();
     })
     mainCharacter.onCollide("questionBlock", (person: any) => {
         console.log("we got a question ladies")
-        k.go("pause")
+        k.go("pause");
         triggerQuestion();
 
       
@@ -349,10 +442,58 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
     k.onKeyDown("shift", () => {
       staminaRegenTimer = 0;
     });
-    k.onKeyDown("w", () => mainCharacter.move(0, -SPEED * playerState.current.runningSpeed));
-    k.onKeyDown("a", () => mainCharacter.move(-SPEED * playerState.current.runningSpeed, 0));
-    k.onKeyDown("s", () => mainCharacter.move(0, SPEED * playerState.current.runningSpeed));
-    k.onKeyDown("d", () => mainCharacter.move(SPEED * playerState.current.runningSpeed, 0));
+       const playIfDiff = (anim: string) => {
+        if (currentAnimRef.current !== anim) {
+          mainCharacter.play(anim);
+          currentAnimRef.current = anim;
+        }
+      };
+    k.onKeyDown("a", () => {
+        mainCharacter.move(-SPEED * playerState.current.runningSpeed, 0);
+        faceLeft();
+        playIfDiff("walkLeft"); // <- no getCurAnim() compare
+        lastDir = "left";
+      });
+
+      k.onKeyDown("d", () => {
+        mainCharacter.move(SPEED * playerState.current.runningSpeed, 0);
+        faceRight();
+        playIfDiff("walkRight");
+        lastDir = "right";
+      });
+
+      k.onKeyDown("w", () => {
+        mainCharacter.move(0, -SPEED * playerState.current.runningSpeed);
+        playIfDiff("walkUp");
+        lastDir = "up";
+      });
+
+      k.onKeyDown("s", () => {
+        mainCharacter.move(0, SPEED * playerState.current.runningSpeed);
+        playIfDiff("walkDown");
+        lastDir = "down";
+      });
+      k.onUpdate(() => {
+        const moving =
+          k.isKeyDown("w") ||
+          k.isKeyDown("a") ||
+          k.isKeyDown("s") ||
+          k.isKeyDown("d");
+
+        if (!moving) {
+          if (lastDir === "left") {
+            faceLeft();
+            playIfDiff("idleLeft");
+          } else if (lastDir === "right") {
+            faceRight();
+            playIfDiff("idleRight");
+          } else if (lastDir === "up") {
+            playIfDiff("idleUp");
+          } else {
+            playIfDiff("idleDown");
+          }
+        }
+      });
 
     k.onUpdate(() => {
       const isSprinting = k.isKeyDown("shift");
@@ -402,7 +543,7 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
     }
 
     // Money UI
-    k.add([k.text(`Money: $${playerState.current.money}`, { size: 24 }), k.pos(MARGIN, MARGIN + 50), k.fixed()]);
+    moneyRef.current = k.add([k.text(`Money: $${playerState.current.money}`, { size: 24 }), k.pos(MARGIN, MARGIN + 50), k.z(2), k.fixed()]);
 
     // Enemies
     const SPEED_BOOST_DURATION = 5;
@@ -425,7 +566,11 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
             } else {
               heart.destroy();
             }
+
+            
           }
+
+          
 
            playerState.current.isSpeedBoosted = true;
           playerState.current.speedBoostTimer = 2;
@@ -474,6 +619,20 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
                 enemy.fireCooldown = 2; // Fire every 2 seconds
             }
             }
+          if (playerState.current.health <= 0) {
+            
+            try { 
+              if (mainMusic.current) mainMusic.current.stop();
+            } catch {}
+            // Let React show the GameOverScreen
+            
+
+            onGameOver();
+            return;
+          }
+
+
+        
         
         // Hit detection
         if (enemy.pos.dist(mainCharacter.pos) < 30 && !playerState.current.isInvincible) {
@@ -493,14 +652,7 @@ export default function Game({ onGameOver, triggerQuestion }: GameProps) {
           }
 
           // Game over trigger
-          if (playerState.current.health <= 0) {
-            try {
-              if (mainMusic.current) mainMusic.current.stop();
-            } catch {}
-            // Let React show the GameOverScreen
-            onGameOver();
-            return;
-          }
+         
 
           // Hurt boost + i-frames
           playerState.current.isSpeedBoosted = true;
