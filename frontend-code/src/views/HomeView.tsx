@@ -98,7 +98,7 @@ export default function HomeView() {
                 setCanUnpause(true);
                 
                 setAnswered(false);
-              }, delay);
+              }, 50);
             }}
           />
         </div>

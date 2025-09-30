@@ -63,14 +63,22 @@ export default function PhoneComponentWithMCQ(props: PhoneProps) {
       'Generate one multiple-choice financial question. Topics: Personal Finance, Corporate Finance, Investment Strategies, Financial Markets, Banking & Financial Institutions, Insurance & Risk Management, Macroeconomics & Finance, Behavioral Finance, Global Trade & Finance, Sustainable Finance, Payments & Banking Tech, Bitcoin & Altcoins, Decentralized Finance (DeFi), Crypto Regulation. Requirements: Question length: ≤150 characters. Each answer length: ≤60 characters. Exactly 4 answers in the "choices" array. The correct answer must be placed at a random index (1–4). The "answer" field must be the number 1, 2, 3, or 4 (not the text). Return ONLY valid JSON in this format, with no extra text: { "question": "the question", "choices": ["answer 1", "answer 2", "answer 3", "answer 4"], "answer": 1}';
 
     try {
-      const response = await fetch(endpoint + "/api/gemini", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-      const data = await response.json();
-      const parsed = data.result
-      console.log('parsed',parsed);
+      // const response = await fetch(endpoint + "/api/gemini", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ prompt }),
+      // });
+      // const data = await response.json();
+      // const parsed = data.result
+      // console.log('parsed',parsed); 
+
+      const parsed = {
+        question: "After the hackathon, just click the first option to keep playing.",
+        choices: ["Correct", "Incorrect", "Incorrect", "Incorrect"],
+        answer: 1
+      }
+
+
       setMcqData({
         question: parsed.question,
         options: parsed.choices.map((choice: string, idx: number) => ({

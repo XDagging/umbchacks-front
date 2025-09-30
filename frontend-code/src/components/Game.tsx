@@ -480,6 +480,7 @@ export default function Game({ onGameOver, triggerQuestion, roundIncreaseTrigger
       k.add([ k.rect(k.width(), k.height()), k.color(0, 0, 0), k.opacity(0.5), k.fixed() ]);
       k.add([ k.text("Paused", { size: 50 }), k.pos(k.center()), k.anchor("center"), k.fixed() ]);
       k.add([ k.text("Answer the question to continue...", { size: 24 }), k.pos(k.center().add(0, 80)), k.anchor("center"), k.fixed(), "pause-message" ]);
+      k.add([ k.text("Click Here and click 'p' to continue after answering", {size :15}), k.pos(k.center().add(0,120)), k.anchor("center"), k.fixed()])
       // The onKeyPress 'p' listener has been MOVED to its own reactive useEffect.
     });
 
