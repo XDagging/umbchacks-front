@@ -1,9 +1,9 @@
-import React from "react";
+// import React from "react";
 import Ad from "../components/Ad";
 import InterComponentNav from "../components/InterComponentNav";
 
 
-export default function CreateView(props: any) {
+export default function CreateView() {
 
 
 
