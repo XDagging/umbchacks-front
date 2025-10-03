@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { Gamepad2, ReceiptText, X } from "lucide-react";
 import HomeViewComponent from "./views/HomeView"; // Your real working game
 import CreditsView from "./views/CreditsView";
+import CreateView from "./views/CreateView";
+
 
 const App: React.FC = () => {
   return (
@@ -11,6 +13,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<EnhancedHomeView />} />
         <Route path="/credits" element={<CreditsView />} />
+        <Route path='/create' element={<CreateView />} />
       </Routes>
     </BrowserRouter>
   );
@@ -74,10 +77,11 @@ const EnhancedHomeView: React.FC = () => {
             <div className="mt-10 flex flex-col w-full gap-2">
               <button className="btn animate-bounce btn-primary font-1 text-lg scale-150 my-3" onClick={() => {
                 setHasGameStarted(true);
-              }}>Play now <Gamepad2 /></button>
+              }}>Free Play <Gamepad2 /></button>
               
-              <p className="pt-2"> </p>
-
+               <Link to="/create" className="btn btn-primary btn-outline font-1 text-lg scale-150 my-3" onClick={() => {
+                
+              }}>Create your own Quiz <Gamepad2 /></Link>
               <button 
                 className="btn btn-outline font-1 text-lg scale-150 my-3"
                 onClick={() => setShowInstructions(true)}
